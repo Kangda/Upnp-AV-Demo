@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/audio.svg</file>
+        <file>icon/image.svg</file>
+        <file>icon/mediaserver.svg</file>
+        <file>icon/text.svg</file>
+        <file>icon/video.svg</file>
+        <file>icon/exit.svg</file>
+        <file>icon/up.png</file>
+    </qresource>
+</RCC>
