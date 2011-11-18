@@ -9,6 +9,10 @@
 
 class QVariant;
 
+class ControlPointNavigatorItem;
+class ControlPointCdsContainerItem;
+
+
 class ControlPointNavigatorModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -38,12 +42,19 @@ private:
         return index(0, 0, rootIndex());
     }
 
-public slots:
+    ControlPointCdsContainerItem* findParentContainer(ControlPointCdsContainerItem* rootItem,
+                                                      const QString& id);
+
+    ControlPointNavigatorItem* m_pRootItem;
+    ControlPointNavigatorItem* m_pServersItem;
+
+
+public Q_SLOTS:
     void objectBrowsered(Herqq::Upnp::Av::HMediaBrowser*, const QSet<QString>&);
     void browserFailed(Herqq::Upnp::Av::HMediaBrowser*);
 
-    void error(Herqq::Upnp::Av::HMediaServerAdapter*,
-               const Herqq::Upnp::HClientAdapterOp<qint32>&);
+    //void error(Herqq::Upnp::Av::HMediaServerAdapter*,
+    //           const Herqq::Upnp::HClientAdapterOp<qint32>&);
     void connectionRead(Herqq::Upnp::Av::HMediaRendererAdapter*, qint32 id);
 
     void connectionDestroyed(QObject*);
