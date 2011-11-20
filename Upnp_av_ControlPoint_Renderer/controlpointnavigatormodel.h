@@ -16,6 +16,7 @@ class ControlPointCdsContainerItem;
 class ControlPointNavigatorModel : public QAbstractItemModel
 {
     Q_OBJECT
+    H_DISABLE_COPY(ControlPointNavigatorModel)
 
 public:
     explicit ControlPointNavigatorModel(QObject *parent = 0);
@@ -28,6 +29,7 @@ public:
     virtual Qt::ItemFlags flags(const QModelIndex& index) const;
     virtual QModelIndex index(
             int row, int column, const QModelIndex& parent = QModelIndex()) const;
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     virtual QModelIndex parent(const QModelIndex &child) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -55,9 +57,9 @@ public Q_SLOTS:
 
     //void error(Herqq::Upnp::Av::HMediaServerAdapter*,
     //           const Herqq::Upnp::HClientAdapterOp<qint32>&);
-    void connectionRead(Herqq::Upnp::Av::HMediaRendererAdapter*, qint32 id);
+    //void connectionRead(Herqq::Upnp::Av::HMediaRendererAdapter*, qint32 id);
 
-    void connectionDestroyed(QObject*);
+    //void connectionDestroyed(QObject*);
 };
 
 #endif // CONTROLPOINTNAVIGATORMODEL_H

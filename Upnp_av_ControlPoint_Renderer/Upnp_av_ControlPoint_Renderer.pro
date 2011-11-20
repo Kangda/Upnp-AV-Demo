@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network xml
+QT       += core gui network xml testlib
 
 TARGET = Upnp_av_ControlPoint_Renderer
 TEMPLATE = app
@@ -29,7 +29,8 @@ win32 {
     DESCRIPTIONS = $${replace(DESCRIPTIONS, /, \\)}
     QMAKE_POST_LINK += xcopy $$DESCRIPTIONS bin\\descriptions /E /Y /C /I $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += copy ..\\lib\\hupnp\\* bin /Y $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += copy ..\\lib\\hupnp_av\\* bin /Y
+    QMAKE_POST_LINK += copy ..\\lib\\hupnp_av\\* bin /Y $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += copy ..\\lib\\other\\* bin
 }
 else {
     LIBS += -lQtSolutions_SOAP-2.7

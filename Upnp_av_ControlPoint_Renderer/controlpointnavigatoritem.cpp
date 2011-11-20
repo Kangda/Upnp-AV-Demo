@@ -12,6 +12,8 @@
 
 #include <QVariant>
 
+#include <QDebug>
+
 using namespace Herqq::Upnp;
 using namespace Herqq::Upnp::Av;
 
@@ -27,8 +29,9 @@ ControlPointNavigatorItem::ControlPointNavigatorItem(ControlPointNavigatorItem* 
 
 ControlPointNavigatorItem::~ControlPointNavigatorItem()
 {
-    qDeleteAll(m_childItems);
-    delete m_pParentItem;
+    //qDebug()<< m_childItems.begin() << tr(" ") << m_childItems.end();
+    if (m_childItems.size() > 0)
+        qDeleteAll(m_childItems);
 }
 
 void ControlPointNavigatorItem::appendChild(ControlPointNavigatorItem *child)
@@ -50,22 +53,22 @@ ControlPointNavigatorItem* ControlPointNavigatorItem::child(int row) const
     return m_childItems.value(row);
 }
 
-int ControlPointNavigatorItem::childCount()
+int ControlPointNavigatorItem::childCount() const
 {
     return m_childItems.count();
 }
 
-int ControlPointNavigatorItem::columnCount()
+int ControlPointNavigatorItem::columnCount() const
 {
     return 1;
 }
 
-ControlPointNavigatorItem* ControlPointNavigatorItem::parent()
+ControlPointNavigatorItem* ControlPointNavigatorItem::parent() const
 {
     return m_pParentItem;
 }
 
-int ControlPointNavigatorItem::row()
+int ControlPointNavigatorItem::row() const
 {
     if (m_pParentItem)
     {
@@ -81,7 +84,7 @@ int ControlPointNavigatorItem::row()
 }
 
 
-int ControlPointNavigatorItem::rowCount()
+int ControlPointNavigatorItem::rowCount() const
 {
     qint32 rowCount = childCount();
     foreach(ControlPointNavigatorItem* child, m_childItems)
@@ -114,7 +117,7 @@ QVariant ControlPointRootItem::data(int) const
 ************************************/
 
 ControlPointContainerItem::ControlPointContainerItem(const QString &name,
-                                                     ControlPointContainerItem *parent):
+                                                     ControlPointNavigatorItem *parent):
     m_name(name),
     ControlPointNavigatorItem(parent)
 {

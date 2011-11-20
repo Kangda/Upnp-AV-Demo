@@ -19,17 +19,22 @@ using namespace Herqq::Upnp::Av;
 
 ControlPointNavigatorModel::ControlPointNavigatorModel(QObject *parent) :
     QAbstractItemModel(parent),
-    m_pRootItem(new ControlPointRootItem),
+    m_pRootItem(new ControlPointRootItem()),
     m_pServersItem()
 {
-    m_pServersItem = new ControlPointContainerItem(tr("Media Server"), m_pRootItem);
+    m_pServersItem = new ControlPointContainerItem(
+            tr("Media Server"), /*dynamic_cast<ControlPointContainerItem*>*/(m_pRootItem));
     m_pRootItem->appendChild(m_pServersItem);
 }
 
 ControlPointNavigatorModel::~ControlPointNavigatorModel()
 {
+    /*
+     You ONLY need to delete the root item, because it will delete the child item while calling
+     the deconstruct function of root item in which children are stored in the variable
+     m_childItems(QList).
+    */
     delete m_pRootItem;
-    delete m_pServersItem;
 }
 
 HMediaBrowser* ControlPointNavigatorModel::mediaServerOnline(
@@ -42,22 +47,23 @@ HMediaBrowser* ControlPointNavigatorModel::mediaServerOnline(
         return 0;
     }
 
-    Q_ASSERT(
-            connect(
-                    browser,
-                    SIGNAL(objectsBrowsed(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>)),
-                    this,
-                    SLOT(objectBrowsered(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>))
-                    )
-            );
-    Q_ASSERT(
-            connect(
-                    browser,
-                    SIGNAL(browseFailed(Herqq::Upnp::Av::HMediaBrowser*)),
-                    this,
-                    SLOT(browserFailed(Herqq::Upnp::Av::HMediaBrowser*))
-                    )
-            );
+    bool ok;
+
+    ok = connect(
+                 browser,
+                 SIGNAL(objectsBrowsed(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>)),
+                 this,
+                 SLOT(objectBrowsered(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>))
+                 );
+    Q_ASSERT(ok);
+
+    ok = connect(
+                 browser,
+                 SIGNAL(browseFailed(Herqq::Upnp::Av::HMediaBrowser*)),
+                 this,
+                 SLOT(browserFailed(Herqq::Upnp::Av::HMediaBrowser*))
+                 );
+    Q_ASSERT(ok);
 
     if (!browser->browseRoot())
     {
@@ -66,7 +72,7 @@ HMediaBrowser* ControlPointNavigatorModel::mediaServerOnline(
     }
     else
     {
-        ControlPointContentDirectoryItem cdsItem =
+        ControlPointContentDirectoryItem* cdsItem =
                 new ControlPointContentDirectoryItem(browser, m_pServersItem);
 
         beginInsertRows(QModelIndex(), m_pRootItem->childCount(), m_pRootItem->childCount());
@@ -90,7 +96,9 @@ ControlPointCdsContainerItem* ControlPointNavigatorModel::findParentContainer(
         }
         else
         {
-            cdsContainerItem = findParentContainer(rootItem->child(i));
+            cdsContainerItem = findParentContainer(
+                    dynamic_cast<ControlPointCdsContainerItem*>(rootItem->child(i)),
+                    id);
             if (cdsContainerItem)
             {
                 return cdsContainerItem;
@@ -98,6 +106,31 @@ ControlPointCdsContainerItem* ControlPointNavigatorModel::findParentContainer(
         }
     }
     return 0;
+}
+
+
+namespace
+{
+    bool hasContainerItem(const ControlPointCdsContainerItem* cdsContainerItem,
+                          const HContainer* container)
+    {
+        for (int i = 0; i < cdsContainerItem->childCount(); ++i)
+        {
+            const ControlPointCdsContainerItem* childContainerItem =
+                    dynamic_cast<const ControlPointCdsContainerItem*>
+                    (cdsContainerItem->child(i));
+            if (childContainerItem && childContainerItem->container() == container)
+            {
+                return true;
+            }
+            else if (hasContainerItem(childContainerItem, container))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 
@@ -134,8 +167,8 @@ void ControlPointNavigatorModel::objectBrowsered(Herqq::Upnp::Av::HMediaBrowser 
         */
         if (id != "0")
         {
-            ControlPointContentDirectoryItem* rootItem =
-                    static_cast<ControlPointContentDirectoryItem*>(cdsItem->child(0));
+            ControlPointCdsContainerItem* rootItem =
+                    static_cast<ControlPointCdsContainerItem*>(cdsItem->child(0));
 
             if (hasContainerItem(rootItem, container))
             {
@@ -245,13 +278,12 @@ QModelIndex ControlPointNavigatorModel::index(int row, int column,
     }
     else
     {
-        parentItem = parent.internalPointer();
+        parentItem = static_cast<ControlPointNavigatorItem*>(parent.internalPointer());
     }
 
     Q_ASSERT(parentItem);
 
-    ControlPointNavigatorItem* childItem =
-            static_cast<ControlPointNavigatorItem*>(parentItem->child(row));
+    ControlPointNavigatorItem* childItem =parentItem->child(row);
 
     if (childItem)
     {
@@ -261,6 +293,18 @@ QModelIndex ControlPointNavigatorModel::index(int row, int column,
     {
         return QModelIndex();
     }
+}
+
+QVariant ControlPointNavigatorModel::headerData(int section,
+                                                Qt::Orientation orientation,
+                                                int role) const
+{
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    {
+        return m_pRootItem->data(section);
+    }
+
+    return QVariant();
 }
 
 QModelIndex ControlPointNavigatorModel::parent(const QModelIndex &child) const
@@ -280,10 +324,8 @@ QModelIndex ControlPointNavigatorModel::parent(const QModelIndex &child) const
     {
         return QModelIndex();
     }
-    else
-    {
-        return createIndex(parentItem->row(), 0, parentItem);
-    }
+
+    return createIndex(0, 0, parentItem);
 
 }
 
@@ -298,7 +340,7 @@ int ControlPointNavigatorModel::rowCount(const QModelIndex &parent) const
 
     if (!parent.isValid())
     {
-        parentItem = m_rootItem;
+        parentItem = m_pRootItem;
     }
     else
     {
@@ -327,26 +369,3 @@ int ControlPointNavigatorModel::rowCount(const QModelIndex &parent) const
 
 
 
-namespace
-{
-    bool hasContainerItem(const ControlPointCdsContainerItem* cdsContainerItem,
-                          const HContainer* container)
-    {
-        for (int i = 0; i < cdsContainerItem->childCount(); ++i)
-        {
-            ControlPointCdsContainerItem* childContainerItem =
-                    dynamic_cast<const ControlPointCdsContainerItem*>
-                    (cdsContainerItem->child(i));
-            if (childContainerItem && childContainerItem->container() == container)
-            {
-                return true;
-            }
-            else if (hasContainerItem(childContainerItem, container))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-}

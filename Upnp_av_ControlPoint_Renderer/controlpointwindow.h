@@ -33,8 +33,15 @@ private:
 
 
 private slots:
+    void on_navigatorTreeView_clicked(QModelIndex index);
     void mediaServerOnline(Herqq::Upnp::Av::HMediaServerAdapter*);
     void mediaServerOffline(Herqq::Upnp::Av::HMediaServerAdapter*);
+    void objectsBrowserd(Herqq::Upnp::Av::HMediaBrowser*, const QSet<QString>&);
+
+Q_SIGNALS:
+    void startInit();
+    void contentSourceRemoved(Herqq::Upnp::HClientDevice*);
+    void closed();
 
 };
 

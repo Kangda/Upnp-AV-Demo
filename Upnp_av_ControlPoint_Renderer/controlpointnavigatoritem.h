@@ -32,7 +32,7 @@ public:
     void appendChild(ControlPointNavigatorItem* child);
     void removeChild(qint32 row);
     ControlPointNavigatorItem* child (int row) const;
-    ControlPointNavigatorItem* parent();
+    ControlPointNavigatorItem* parent() const;
 
     int childCount() const;
     int columnCount() const;
@@ -66,10 +66,10 @@ class ControlPointContainerItem : public ControlPointNavigatorItem
 {
 public:
     explicit ControlPointContainerItem(const QString&,
-                                       ControlPointContainerItem* parent = 0);
+                                       ControlPointNavigatorItem* parent = 0);
     virtual ~ControlPointContainerItem();
 
-    virtual data(int column) const;
+    virtual QVariant data(int column) const;
     //virtual void accept(ControlPointNavigatorItemVisitor*);
 private:
     QString m_name;
