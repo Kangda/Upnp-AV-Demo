@@ -161,9 +161,10 @@ void ControlPointNavigatorModel::objectBrowsered(Herqq::Upnp::Av::HMediaBrowser 
             continue;
         }
 
-        /*MAYBE the id that is equal to 0 is the first Object that been sended to the Contrl
-        *Point,so all the objects will be located under the cdsItem->child(0),and it is the
-        *root Dir for the device.
+        /*
+         MAYBE the id that is equal to 0 is the first Object that been sended to the Contrl
+         Point,so all the objects will be located under the cdsItem->child(0),and it is the
+         root Dir for the device.
         */
         if (id != "0")
         {
@@ -195,6 +196,14 @@ void ControlPointNavigatorModel::objectBrowsered(Herqq::Upnp::Av::HMediaBrowser 
         }
         else
         {
+            /*
+             The if statment avoid "contents" container appearing too many time after clicking on the existed
+             "content" container.
+            */
+            if (cdsItem->child(0))
+            {
+                continue;
+            }
             ControlPointCdsContainerItem* newCdsContainerItem =
                     new ControlPointCdsContainerItem(container, cdsDataSource, cdsItem);
             cdsItem->appendChild(newCdsContainerItem);

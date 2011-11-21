@@ -28,7 +28,7 @@
         </sizepolicy>
        </property>
        <attribute name="headerVisible">
-        <bool>false</bool>
+        <bool>true</bool>
        </attribute>
       </widget>
       <widget class="QWidget" name="layoutWidget">
@@ -100,7 +100,7 @@
          </widget>
         </item>
         <item row="1" column="0" colspan="3">
-         <widget class="QListView" name="detaiListlView">
+         <widget class="QListView" name="detaiDisplaylView">
           <property name="resizeMode">
            <enum>QListView::Adjust</enum>
           </property>

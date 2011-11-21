@@ -101,6 +101,7 @@ int ControlPointNavigatorItem::rowCount() const
 ControlPointRootItem::ControlPointRootItem(ControlPointNavigatorItem *parent):
         ControlPointNavigatorItem(parent)
 {
+    m_type = Root;
 }
 
 ControlPointRootItem::~ControlPointRootItem()
@@ -112,6 +113,10 @@ QVariant ControlPointRootItem::data(int) const
     return "Root";
 }
 
+void ControlPointRootItem::getDetail(ControlPointNavigatorItemVisitor *)
+{
+}
+
 /************************************
 *ControlPointContainerItem
 ************************************/
@@ -121,6 +126,7 @@ ControlPointContainerItem::ControlPointContainerItem(const QString &name,
     m_name(name),
     ControlPointNavigatorItem(parent)
 {
+    m_type = Container;
 }
 
 ControlPointContainerItem::~ControlPointContainerItem()
@@ -130,6 +136,10 @@ ControlPointContainerItem::~ControlPointContainerItem()
 QVariant ControlPointContainerItem::data(int) const
 {
     return m_name;
+}
+
+void ControlPointContainerItem::getDetail(ControlPointNavigatorItemVisitor *)
+{
 }
 
 /************************************
@@ -143,6 +153,7 @@ ControlPointContentDirectoryItem::ControlPointContentDirectoryItem(
         ControlPointNavigatorItem(parent)
 {
     Q_ASSERT(m_pBrowser);
+    m_type = ContentDirectory;
 }
 
 ControlPointContentDirectoryItem::~ControlPointContentDirectoryItem()
@@ -155,6 +166,9 @@ QVariant ControlPointContentDirectoryItem::data(int) const
     return m_pBrowser->contentDirectory()->service()->parentDevice()->info().friendlyName();
 }
 
+void ControlPointContentDirectoryItem::getDetail(ControlPointNavigatorItemVisitor *)
+{
+}
 
 /************************************
 *ControlPointCdsContainerItem
@@ -170,15 +184,18 @@ ControlPointCdsContainerItem::ControlPointCdsContainerItem(
 {
     Q_ASSERT(m_pDataSource);
     Q_ASSERT(m_pContainer);
+    m_type = CdsContainer;
 }
 
 ControlPointCdsContainerItem::~ControlPointCdsContainerItem()
 {
-    delete m_pDataSource;
-    delete m_pContainer;
 }
 
 QVariant ControlPointCdsContainerItem::data(int) const
 {
     return m_pContainer->title();
+}
+
+void ControlPointCdsContainerItem::getDetail(ControlPointNavigatorItemVisitor *)
+{
 }

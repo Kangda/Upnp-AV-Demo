@@ -1,0 +1,5 @@
+1. Learn the method in which ControlPoint get the notify from the Server. And add some functionality, such as add/delete direcroty and so on.
+
+2. Add RTP transmission function to the program, so that it can handle the media steam.
+
+3. Reconstruct the structure of MediaServer following the structure of Hadoop.

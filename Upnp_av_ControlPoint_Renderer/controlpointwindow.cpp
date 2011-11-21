@@ -27,7 +27,7 @@ ControlPointWindow::ControlPointWindow(QWidget *parent) :
 
     HAvControlPointConfiguration config;
 
-    m_pControlPoint = new HAvControlPoint(config, this);
+    m_pControlPoint = new HAvControlPoint(config);
 
     bool ok;
 
@@ -99,8 +99,11 @@ void ControlPointWindow::closeEvent(QCloseEvent *)
 
 void ControlPointWindow::on_navigatorTreeView_clicked(QModelIndex index)
 {
+
     ControlPointNavigatorItem* navItem
             = static_cast<ControlPointNavigatorItem*>(index.internalPointer());
+
+    //QMessageBox::information(this, tr("test"), tr("Type: %1").arg(navItem->type()));
 
     if (navItem)
     {

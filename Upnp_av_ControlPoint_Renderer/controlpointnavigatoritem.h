@@ -13,6 +13,16 @@ class QList;
 class QVariant;
 class ContentDirectoryItem;
 class ContentDirectoryContainerItem;
+class ControlPointNavigatorItemVisitor;
+
+enum NavigatorItemType
+{
+    Normal,
+    Root,
+    Container,
+    ContentDirectory,
+    CdsContainer
+};
 
 /************************************
 *ControlPointNavigatorItem
@@ -20,11 +30,6 @@ class ContentDirectoryContainerItem;
 
 class ControlPointNavigatorItem
 {
-
-protected:
-    QList<ControlPointNavigatorItem*> m_childItems;
-    ControlPointNavigatorItem* m_pParentItem;
-
 public:
     explicit ControlPointNavigatorItem(ControlPointNavigatorItem* parent = 0);
     virtual ~ControlPointNavigatorItem();
@@ -41,7 +46,17 @@ public:
     int rowCount() const;
 
     virtual QVariant data(int column) const = 0;
-    //virtual void accept(ControlPointNavigatorItemVisitor*) = 0;
+    virtual void getDetail(ControlPointNavigatorItemVisitor*) = 0;
+    inline NavigatorItemType type() const
+    {
+        return m_type;
+    }
+
+protected:
+
+    QList<ControlPointNavigatorItem*> m_childItems;
+    ControlPointNavigatorItem* m_pParentItem;
+    NavigatorItemType m_type;
 
 };
 
@@ -56,7 +71,7 @@ public:
 
     virtual QVariant data(int) const;
 
-    //virtual void accept(ControlPointNavigatorItemVisitor*);
+    virtual void getDetail(ControlPointNavigatorItemVisitor*);
 };
 
 /************************************
@@ -70,7 +85,7 @@ public:
     virtual ~ControlPointContainerItem();
 
     virtual QVariant data(int column) const;
-    //virtual void accept(ControlPointNavigatorItemVisitor*);
+    virtual void getDetail(ControlPointNavigatorItemVisitor*);
 private:
     QString m_name;
 };
@@ -92,7 +107,7 @@ public:
     {
         return m_pBrowser;
     }
-    //virtual void accept(ControlPointNavigatorItemVisitor*);
+    virtual void getDetail(ControlPointNavigatorItemVisitor*);
 private:
     Herqq::Upnp::Av::HMediaBrowser* m_pBrowser;
 
@@ -121,7 +136,7 @@ public:
         return m_pDataSource;
     }
 
-    //virtual void accept(ControlPointNavigatorItemVisitor*);
+    virtual void getDetail(ControlPointNavigatorItemVisitor*);
 private:
     Herqq::Upnp::Av::HContainer* m_pContainer;
     Herqq::Upnp::Av::HCdsDataSource* m_pDataSource;

@@ -53,11 +53,17 @@ DESTDIR = ./bin
 SOURCES += main.cpp\
         controlpointwindow.cpp \
     controlpointnavigatormodel.cpp \
-    controlpointnavigatoritem.cpp
+    controlpointnavigatoritem.cpp \
+    controlpointnavigatoritemvisitor.cpp \
+    controlpointdetaildisplayitem.cpp \
+    controlpointdetaildisplaymodel.cpp
 
 HEADERS  += controlpointwindow.h \
     controlpointnavigatormodel.h \
-    controlpointnavigatoritem.h
+    controlpointnavigatoritem.h \
+    controlpointnavigatoritemvisitor.h \
+    controlpointdetaildisplayitem.h \
+    controlpointdetaildisplaymodel.h
 
 FORMS    += controlpointwindow.ui
 

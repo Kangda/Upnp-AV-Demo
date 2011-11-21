@@ -7,5 +7,6 @@
         <file>icon/video.svg</file>
         <file>icon/exit.svg</file>
         <file>icon/up.png</file>
+        <file>icon/folder.svg</file>
     </qresource>
 </RCC>
