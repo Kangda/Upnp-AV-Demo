@@ -3,8 +3,8 @@ This repo is an Demo of Upnp a/v using C++ based on Hupnp a/v alpha.
 
 Index Structure
 
-include/				contain the header files
-lib/					contain the .so files
-src/					contain the real .h files
-Upnp_av_MediaServer/	contain the implementation of Media Server
+include/				                  contain the header files
+lib/					                    contain the .so files
+src/					                    contain the real .h files
+Upnp_av_MediaServer/	            contain the implementation of Media Server
 Upnp_av_ControlPoint_Renderer/		contain the implementation of Control Point and Renderer
