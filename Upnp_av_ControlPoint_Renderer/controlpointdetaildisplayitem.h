@@ -1,20 +1,17 @@
 #ifndef CONTROLPOINTDETAILDISPLAYITEM_H
 #define CONTROLPOINTDETAILDISPLAYITEM_H
 
+#include <HUpnpAv/HItem>
+
 #include <QStandardItem>
 
 class ControlPointNavigatorItem;
 class ControlPointContentDirectoryItem;
 class ControlPointCdsContainerItem;
-class HItem;
+
 class QIcon;
 
-enum DetailDisplayItemType
-{
-    ContentDirectory,
-    CdsContainer,
-    Item
-};
+
 
 /************************************
 *ControlPointDetailDisplayItem
@@ -23,32 +20,40 @@ enum DetailDisplayItemType
 class ControlPointDetailDisplayItem : public QStandardItem
 {
 public:
+
+    enum DetailDisplayItemType
+    {
+        ContentDirectory,
+        CdsContainer,
+        Item
+    };
+
     explicit ControlPointDetailDisplayItem(DetailDisplayItemType,
                                            ControlPointNavigatorItem*,
-                                           HItem*,
-                                           ControlPointNavigatorItem* parent);
+                                           Herqq::Upnp::Av::HItem*,
+                                           ControlPointNavigatorItem*);
     ~ControlPointDetailDisplayItem();
 
     inline DetailDisplayItemType type()
     {
         return m_type;
     }
-    inline parent() const
+    inline ControlPointNavigatorItem* parent() const
     {
         return m_pParent;
     }
 
-    union item
-    {
-        ControlPointContentDirectoryItem* contentDirectoryItem;
-        ControlPointCdsContainerItem* cdsContainerItem;
-        HItem* normalItem;
-    };
+    void* itemPointer();
+    int childCount() const;
+    QString toolTip() const;
+
 private:
     DetailDisplayItemType m_type;
     ControlPointNavigatorItem* m_pParent;
+    ControlPointNavigatorItem* m_pNavItem;
+    Herqq::Upnp::Av::HItem* m_pHItem;
 
-    QIcon getItemIcon(HItem*) const;
+    QIcon getItemIcon(Herqq::Upnp::Av::HItem*) const;
 };
 
 

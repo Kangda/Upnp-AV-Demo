@@ -8,5 +8,6 @@
         <file>icon/exit.svg</file>
         <file>icon/up.png</file>
         <file>icon/folder.svg</file>
+        <file>icon/empty.svg</file>
     </qresource>
 </RCC>

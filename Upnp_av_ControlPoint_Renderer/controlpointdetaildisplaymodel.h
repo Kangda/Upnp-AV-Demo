@@ -5,6 +5,7 @@
 #include "controlpointnavigatoritem.h"
 
 #include <HUpnpCore/HUdn>
+
 #include <HUpnpAv/HUpnpAv>
 
 #include <QAbstractItemModel>
@@ -27,12 +28,13 @@ private:
         H_DISABLE_COPY(NavigatorItemVisitor)
     private:
         ControlPointDetailDisplayModel* m_pOwner;
+        ControlPointNavigatorItem* m_pCurItem;
+
+        Herqq::Upnp::HUdn findCurrentDeviceUdn(ControlPointCdsContainerItem*);
 
     public:
         NavigatorItemVisitor(ControlPointDetailDisplayModel*);
         virtual ~NavigatorItemVisitor();
-
-        QString findCurrentDeviceUdn(ControlPointCdsContainerItem*);
 
         virtual void visit(ControlPointContainerItem*);
         virtual void visit(ControlPointContentDirectoryItem*);
@@ -43,6 +45,7 @@ private:
 
     QList<ControlPointDetailDisplayItem*> m_modelData;
     Herqq::Upnp::HUdn m_rootDeviceUdn;
+
 
 public:
     explicit ControlPointDetailDisplayModel(QObject *parent = 0);
@@ -56,6 +59,8 @@ public:
 
     void deviceRemoved(const Herqq::Upnp::HUdn&);
     void init(ControlPointNavigatorItem*);
+
+    ControlPointNavigatorItem* currentItem();
 
 signals:
 

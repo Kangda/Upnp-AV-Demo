@@ -15,15 +15,6 @@ class ContentDirectoryItem;
 class ContentDirectoryContainerItem;
 class ControlPointNavigatorItemVisitor;
 
-enum NavigatorItemType
-{
-    Normal,
-    Root,
-    Container,
-    ContentDirectory,
-    CdsContainer
-};
-
 /************************************
 *ControlPointNavigatorItem
 ************************************/
@@ -31,6 +22,16 @@ enum NavigatorItemType
 class ControlPointNavigatorItem
 {
 public:
+
+    enum NavigatorItemType
+    {
+        Normal,
+        Root,
+        Container,
+        ContentDirectory,
+        CdsContainer
+    };
+
     explicit ControlPointNavigatorItem(ControlPointNavigatorItem* parent = 0);
     virtual ~ControlPointNavigatorItem();
 

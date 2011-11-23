@@ -3,3 +3,7 @@
 2. Add RTP transmission function to the program, so that it can handle the media steam.
 
 3. Reconstruct the structure of MediaServer following the structure of Hadoop.
+
+4. Property Dialog.
+
+5. 加入对*.mkv等多媒体类型的识别

@@ -40,14 +40,14 @@ ControlPointDetailDisplayModel::NavigatorItemVisitor::~NavigatorItemVisitor()
 {
 }
 
-QString ControlPointDetailDisplayModel::NavigatorItemVisitor::findCurrentDeviceUdn(
+HUdn ControlPointDetailDisplayModel::NavigatorItemVisitor::findCurrentDeviceUdn(
         ControlPointCdsContainerItem *cdsContainerItem)
 {
     ControlPointCdsContainerItem* curItem = cdsContainerItem;
 
     while (curItem->container()->id() != "0")
     {
-        curItem = curItem->parent();
+        curItem = dynamic_cast<ControlPointCdsContainerItem*>(curItem->parent());
     }
 
     Q_ASSERT(curItem->container()->id() == "0");
@@ -57,7 +57,8 @@ QString ControlPointDetailDisplayModel::NavigatorItemVisitor::findCurrentDeviceU
 
     Q_ASSERT(cdItem);
 
-    return cdItem->browser()->contentDirectory()->service()->parentDevice()->info().udn();
+    return cdItem->browser()->contentDirectory()->
+            service()->parentDevice()->info().udn();
 
 }
 
@@ -66,18 +67,20 @@ void ControlPointDetailDisplayModel::NavigatorItemVisitor::visit(
 {
     Q_ASSERT(containerItem);
 
+    m_pCurItem = containerItem;
+
     m_pOwner->beginResetModel();
 
     m_pOwner->clearModel();
 
-    for(int i = 0; i < item->childCount(); ++i)
+    for(int i = 0; i < containerItem->childCount(); ++i)
     {
-        ControlPointDetailDisplayItem* item =
-                new ControlPointDetailDisplayItem(ContentDirectory,
+        ControlPointDetailDisplayItem* newitem =
+                new ControlPointDetailDisplayItem(ControlPointDetailDisplayItem::ContentDirectory,
                                                   containerItem->child(i),
                                                   0,
                                                   containerItem);
-        m_pOwner->m_modelData.append(item);
+        m_pOwner->m_modelData.append(newitem);
     }
 
     m_pOwner->endResetModel();
@@ -88,20 +91,80 @@ void ControlPointDetailDisplayModel::NavigatorItemVisitor::visit(
 {
     Q_ASSERT(cdItem);
 
-    m_pOwner->beginResetModel();
+    m_pCurItem = cdItem;
 
     m_pOwner->m_rootDeviceUdn =
             cdItem->browser()->contentDirectory()->service()->parentDevice()->info().udn();
+
+    m_pOwner->beginResetModel();
+
+    m_pOwner->clearModel();
+
+    for (int i = 0; i < cdItem->childCount(); ++i)
+    {
+        ControlPointDetailDisplayItem* newitem =
+                new ControlPointDetailDisplayItem(ControlPointDetailDisplayItem::CdsContainer,
+                                                  cdItem->child(i),
+                                                  0,
+                                                  cdItem);
+        m_pOwner->m_modelData.append(newitem);
+    }
 
     m_pOwner->endResetModel();
 }
 
 void ControlPointDetailDisplayModel::NavigatorItemVisitor::visit(
-        ControlPointCdsContainerItem *item)
+        ControlPointCdsContainerItem *cdsContainerItem)
 {
+    Q_ASSERT(cdsContainerItem);
+
+    m_pCurItem = cdsContainerItem;
+
+    m_pOwner->m_rootDeviceUdn = findCurrentDeviceUdn(cdsContainerItem);
+
+    m_pOwner->beginResetModel();
+
+    m_pOwner->clearModel();
+
+    for (int i = 0; i < cdsContainerItem->childCount(); ++i)
+    {
+        ControlPointDetailDisplayItem* newitem =
+                new ControlPointDetailDisplayItem(ControlPointDetailDisplayItem::CdsContainer,
+                                                  cdsContainerItem->child(i),
+                                                  0,
+                                                  cdsContainerItem);
+        m_pOwner->m_modelData.append(newitem);
+    }
+
+    HItems items = cdsContainerItem->dataSource()->
+                   findItems(cdsContainerItem->container()->childIds());
+    foreach(HItem *item, items)
+    {
+        ControlPointDetailDisplayItem* newitem =
+                new ControlPointDetailDisplayItem(ControlPointDetailDisplayItem::Item,
+                                                  0,
+                                                  item,
+                                                  cdsContainerItem);
+        m_pOwner->m_modelData.append(newitem);
+    }
+
+    m_pOwner->endResetModel();
 
 }
 
+//HUdn ControlPointDetailDisplayModel::NavigatorItemVisitor::findCurrentDeviceUdn(
+//        ControlPointCdsContainerItem *item)
+//{
+//    while (item->container()->id() != "0")
+//    {
+//        item = dynamic_cast<ControlPointCdsContainerItem*>(item->parent());
+//    }
+
+//    ControlPointContentDirectoryItem* cdItem =
+//            dynamic_cast<ControlPointContentDirectoryItem*>(item->parent());
+//    return cdItem->browser()->contentDirectory()->
+//            service()->parentDevice()->info().udn();
+//}
 
 /********************************************
   ControlPointDetailDisplayModel
@@ -121,27 +184,35 @@ QModelIndex ControlPointDetailDisplayModel::index(int row,
                                                   int column,
                                                   const QModelIndex &parent) const
 {
-
+    return hasIndex(row, column, parent) ?
+            createIndex(row, column, m_modelData.at(row)) :
+            QModelIndex();
 }
 
-QModelIndex ControlPointDetailDisplayModel::parent(const QModelIndex &child) const
+QModelIndex ControlPointDetailDisplayModel::parent(const QModelIndex &/*child*/) const
 {
-
+    return QModelIndex();
 }
 
 int ControlPointDetailDisplayModel::rowCount(const QModelIndex &parent) const
 {
-
+    return parent.isValid() ? 0 : m_modelData.count();
 }
 
 int ControlPointDetailDisplayModel::columnCount(const QModelIndex &parent) const
 {
-
+    return parent.isValid() ? 0 : 1;
 }
 
 QVariant ControlPointDetailDisplayModel::data(const QModelIndex &index, int role) const
 {
+    if (index.row() < 0 || index.row() >= m_modelData.count())
+        return QVariant();
 
+    if (role == Qt::DisplayRole || role == Qt::EditRole)
+        return m_modelData.at(index.row())->data(role);
+
+    return QVariant();
 }
 
 void ControlPointDetailDisplayModel::clearModel()
