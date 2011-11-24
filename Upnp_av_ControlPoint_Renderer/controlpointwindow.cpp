@@ -150,6 +150,8 @@ void ControlPointWindow::objectsBrowserd(Herqq::Upnp::Av::HMediaBrowser *browser
 
 void ControlPointWindow::updateDetailDisplay(ControlPointNavigatorItem* item)
 {
+    m_pUi->actionProperties->setEnabled(false);
+
     m_pDetailModel->init(item);
     m_pUi->pathLine->setText(m_pDetailModel->path(item));
 
