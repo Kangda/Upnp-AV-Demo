@@ -1,4 +1,5 @@
 #include "controlpointnavigatoritem.h"
+#include "controlpointnavigatoritemvisitor.h"
 
 #include <HUpnpCore/HDeviceInfo>
 #include <HUpnpCore/HClientService>
@@ -113,8 +114,9 @@ QVariant ControlPointRootItem::data(int) const
     return "Root";
 }
 
-void ControlPointRootItem::getDetail(ControlPointNavigatorItemVisitor *)
+void ControlPointRootItem::getDetail(ControlPointNavigatorItemVisitor */*Visitor*/)
 {
+    //Visitor->visit(this);
 }
 
 /************************************
@@ -138,8 +140,9 @@ QVariant ControlPointContainerItem::data(int) const
     return m_name;
 }
 
-void ControlPointContainerItem::getDetail(ControlPointNavigatorItemVisitor *)
+void ControlPointContainerItem::getDetail(ControlPointNavigatorItemVisitor *Visitor)
 {
+    Visitor->visit(this);
 }
 
 /************************************
@@ -166,8 +169,9 @@ QVariant ControlPointContentDirectoryItem::data(int) const
     return m_pBrowser->contentDirectory()->service()->parentDevice()->info().friendlyName();
 }
 
-void ControlPointContentDirectoryItem::getDetail(ControlPointNavigatorItemVisitor *)
+void ControlPointContentDirectoryItem::getDetail(ControlPointNavigatorItemVisitor *Visitor)
 {
+    Visitor->visit(this);
 }
 
 /************************************
@@ -196,6 +200,7 @@ QVariant ControlPointCdsContainerItem::data(int) const
     return m_pContainer->title();
 }
 
-void ControlPointCdsContainerItem::getDetail(ControlPointNavigatorItemVisitor *)
+void ControlPointCdsContainerItem::getDetail(ControlPointNavigatorItemVisitor *Visitor)
 {
+    Visitor->visit(this);
 }

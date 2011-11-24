@@ -9,5 +9,6 @@
         <file>icon/up.png</file>
         <file>icon/folder.svg</file>
         <file>icon/empty.svg</file>
+        <file>icon/dialog-ok.svg</file>
     </qresource>
 </RCC>

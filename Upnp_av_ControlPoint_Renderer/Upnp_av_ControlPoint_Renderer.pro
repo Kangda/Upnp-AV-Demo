@@ -56,16 +56,19 @@ SOURCES += main.cpp\
     controlpointnavigatoritem.cpp \
     controlpointnavigatoritemvisitor.cpp \
     controlpointdetaildisplayitem.cpp \
-    controlpointdetaildisplaymodel.cpp
+    controlpointdetaildisplaymodel.cpp \
+    controlpointpropertydialog.cpp
 
 HEADERS  += controlpointwindow.h \
     controlpointnavigatormodel.h \
     controlpointnavigatoritem.h \
     controlpointnavigatoritemvisitor.h \
     controlpointdetaildisplayitem.h \
-    controlpointdetaildisplaymodel.h
+    controlpointdetaildisplaymodel.h \
+    controlpointpropertydialog.h
 
-FORMS    += controlpointwindow.ui
+FORMS    += controlpointwindow.ui \
+    controlpointpropertydialog.ui
 
 RESOURCES += \
     resource.qrc

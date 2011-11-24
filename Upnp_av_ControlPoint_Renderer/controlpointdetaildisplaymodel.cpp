@@ -67,7 +67,7 @@ void ControlPointDetailDisplayModel::NavigatorItemVisitor::visit(
 {
     Q_ASSERT(containerItem);
 
-    m_pCurItem = containerItem;
+    m_pOwner->m_pCurItem = containerItem;
 
     m_pOwner->beginResetModel();
 
@@ -91,7 +91,7 @@ void ControlPointDetailDisplayModel::NavigatorItemVisitor::visit(
 {
     Q_ASSERT(cdItem);
 
-    m_pCurItem = cdItem;
+    m_pOwner->m_pCurItem = cdItem;
 
     m_pOwner->m_rootDeviceUdn =
             cdItem->browser()->contentDirectory()->service()->parentDevice()->info().udn();
@@ -118,7 +118,7 @@ void ControlPointDetailDisplayModel::NavigatorItemVisitor::visit(
 {
     Q_ASSERT(cdsContainerItem);
 
-    m_pCurItem = cdsContainerItem;
+    m_pOwner->m_pCurItem = cdsContainerItem;
 
     m_pOwner->m_rootDeviceUdn = findCurrentDeviceUdn(cdsContainerItem);
 
@@ -209,7 +209,7 @@ QVariant ControlPointDetailDisplayModel::data(const QModelIndex &index, int role
     if (index.row() < 0 || index.row() >= m_modelData.count())
         return QVariant();
 
-    if (role == Qt::DisplayRole || role == Qt::EditRole)
+    if (role == Qt::DisplayRole || role == Qt::EditRole || Qt::DecorationRole)
         return m_modelData.at(index.row())->data(role);
 
     return QVariant();
@@ -237,7 +237,34 @@ void ControlPointDetailDisplayModel::init(ControlPointNavigatorItem *navItem)
     navItem->getDetail(&visitor);
 }
 
+ControlPointNavigatorItem* ControlPointDetailDisplayModel::currentItem() const
+{
+    return m_pCurItem;
+}
 
+QString ControlPointDetailDisplayModel::path(ControlPointNavigatorItem* item)
+{
+
+    switch (item->type())
+    {
+    case ControlPointNavigatorItem::Root:
+         return QString("/");
+         break;
+    case ControlPointNavigatorItem::Container:
+         return QString("/");
+         break;
+    case ControlPointNavigatorItem:: ContentDirectory:
+         return QString("/%1").arg(item->data(0).toString());
+         break;
+    case ControlPointNavigatorItem::CdsContainer:
+         return QString("%1/%2").arg(path(item->parent()), item->data(0).toString());
+         break;
+    default:
+         return QString("");
+         break;
+    }
+
+}
 
 
 

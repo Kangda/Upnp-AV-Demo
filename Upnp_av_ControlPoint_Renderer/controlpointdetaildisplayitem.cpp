@@ -125,7 +125,8 @@ QString ControlPointDetailDisplayItem::toolTip() const
     {
     case ContentDirectory:
     case CdsContainer:
-        return QString("\"%1\" selected (containing %2 items)").arg(this->text(), this->childCount());
+        return QString("\"%1\" selected (containing %2 items)").
+                arg(this->text(), QString::number(this->childCount()));
         break;
     case Item:
         return QString("\"%1\" selected").arg(this->text());

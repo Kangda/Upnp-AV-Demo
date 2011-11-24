@@ -1,7 +1,10 @@
 #include "controlpointwindow.h"
 #include "ui_controlpointwindow.h"
 #include "controlpointnavigatoritem.h"
+#include "controlpointdetaildisplayitem.h"
+#include "controlpointpropertydialog.h"
 
+#include <QMenu>
 #include <QStandardItem>
 
 #include <HUpnpCore/HDeviceInfo>
@@ -21,9 +24,11 @@ ControlPointWindow::ControlPointWindow(QWidget *parent) :
     QMainWindow(parent),
     m_pUi(new Ui::ControlPointWindow),
     m_pControlPoint(0),
-    m_pModel(0)
+    m_pNavModel(0)
 {
     m_pUi->setupUi(this);
+
+    isFocusOnTreeView = true;
 
     HAvControlPointConfiguration config;
 
@@ -45,8 +50,13 @@ ControlPointWindow::ControlPointWindow(QWidget *parent) :
                  );
     Q_ASSERT(ok);
 
-    m_pModel = new ControlPointNavigatorModel(this);
-    m_pUi->navigatorTreeView->setModel(m_pModel);
+    m_pNavModel = new ControlPointNavigatorModel(this);
+    m_pUi->navigatorTreeView->setModel(m_pNavModel);
+
+    m_pDetailModel = new ControlPointDetailDisplayModel(this);
+    m_pUi->detaiDisplaylView->setModel(m_pDetailModel);
+
+    uiInitialization();
 
     ok = m_pControlPoint->init();
     Q_ASSERT(ok);
@@ -57,16 +67,34 @@ ControlPointWindow::~ControlPointWindow()
 {
 
     delete m_pUi;
-    delete m_pModel;
+    delete m_pNavModel;
+    delete m_pDetailModel;
     delete m_pControlPoint;
 
+}
+
+void ControlPointWindow::uiInitialization()
+{
+    //For View
+    m_pUi->detaiDisplaylView->setGridSize(QSize(120, 100));
+    m_pUi->detaiDisplaylView->setSpacing(20);
+    m_pUi->detaiDisplaylView->setIconSize(QSize(48, 48));
+
+    //For spiltter
+    m_pUi->splitter->setStretchFactor(0, 1);
+    m_pUi->splitter->setStretchFactor(1, 2);
+
+    //For Popup menu
+    m_pPopUpMenu = new QMenu(this);
+    m_pPopUpMenu->addAction(m_pUi->actionProperties);
+    m_pUi->actionProperties->setEnabled(false);
 }
 
 void ControlPointWindow::mediaServerOnline(
         Herqq::Upnp::Av::HMediaServerAdapter *deviceAdapter)
 {
     //QMessageBox::information(this, tr("test"), tr("test"));
-    HMediaBrowser* browser = m_pModel->mediaServerOnline(deviceAdapter);
+    HMediaBrowser* browser = m_pNavModel->mediaServerOnline(deviceAdapter);
 //    bool ok = connect(
 //            browser,
 //            SIGNAL(objectsBrowsed(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>)),
@@ -88,7 +116,7 @@ void ControlPointWindow::mediaServerOffline(
         Herqq::Upnp::Av::HMediaServerAdapter *deviceAdapter)
 {
     //m_pControlPoint->removeMediaServer(deviceAdapter);
-    m_pModel->mediaServerOffline(deviceAdapter);
+    m_pNavModel->mediaServerOffline(deviceAdapter);
 }
 
 void ControlPointWindow::closeEvent(QCloseEvent *)
@@ -97,38 +125,144 @@ void ControlPointWindow::closeEvent(QCloseEvent *)
 }
 
 
+void ControlPointWindow::objectsBrowserd(Herqq::Upnp::Av::HMediaBrowser *browser,
+                                        const QSet<QString> &ids)
+{
+    Q_UNUSED(browser);
+    Q_UNUSED(ids);
+
+    if (isFocusOnTreeView)
+    {
+        QModelIndex curIndex = m_pUi->navigatorTreeView->currentIndex();
+
+        if (!curIndex.isValid())
+            return;
+
+        ControlPointNavigatorItem* navItem =
+                static_cast<ControlPointNavigatorItem*>(curIndex.internalPointer());
+
+        if (navItem)
+        {
+            updateDetailDisplay(navItem);
+        }
+    }
+}
+
+void ControlPointWindow::updateDetailDisplay(ControlPointNavigatorItem* item)
+{
+    m_pDetailModel->init(item);
+    m_pUi->pathLine->setText(m_pDetailModel->path(item));
+
+    //prebrowser folders in current dir
+    for (int i = 0; i < item->childCount(); ++i)
+    {
+        getCdsContainerDetail(item->child(i));
+    }
+}
+
+bool ControlPointWindow::getCdsContainerDetail(ControlPointNavigatorItem* navItem)
+{
+    ControlPointCdsContainerItem* cdsContainerItem =
+            dynamic_cast<ControlPointCdsContainerItem*>(navItem);
+
+    if (cdsContainerItem && cdsContainerItem->container()->childIds().isEmpty())
+    {
+        ControlPointNavigatorItem* curItem = cdsContainerItem->parent();
+        ControlPointContentDirectoryItem* parItem = 0;
+
+        do
+        {
+            parItem = dynamic_cast<ControlPointContentDirectoryItem*>(curItem);
+            curItem = curItem->parent();
+        }while (!parItem);
+
+        parItem->browser()->browse(HBrowseParams(cdsContainerItem->container()->id(),
+                                                 HBrowseParams::ObjectAndDirectChildren));
+        return false;
+    }
+    return true;
+}
+
 void ControlPointWindow::on_navigatorTreeView_clicked(QModelIndex index)
 {
+    isFocusOnTreeView = true;
 
     ControlPointNavigatorItem* navItem
             = static_cast<ControlPointNavigatorItem*>(index.internalPointer());
 
     //QMessageBox::information(this, tr("test"), tr("Type: %1").arg(navItem->type()));
 
-    if (navItem)
+    if (navItem->type() == ControlPointNavigatorItem::CdsContainer)
     {
-        ControlPointCdsContainerItem* cdsContainerItem =
-                dynamic_cast<ControlPointCdsContainerItem*>(navItem);
+        if (getCdsContainerDetail(navItem))
+            updateDetailDisplay(navItem);
+    }
+    else
+        updateDetailDisplay(navItem);
+}
 
-        if (cdsContainerItem && cdsContainerItem->container()->childIds().isEmpty())
+
+void ControlPointWindow::on_upDirButton_clicked()
+{
+    isFocusOnTreeView = false;
+    updateDetailDisplay(m_pDetailModel->currentItem()->parent());
+}
+
+void ControlPointWindow::on_detaiDisplaylView_activated(QModelIndex index)
+{
+    isFocusOnTreeView = false;
+
+    if (index.isValid())
+    {
+        ControlPointDetailDisplayItem* item =
+                static_cast<ControlPointDetailDisplayItem*>(index.internalPointer());
+
+        switch (item->type())
         {
-            ControlPointNavigatorItem* curItem = cdsContainerItem->parent();
-            ControlPointContentDirectoryItem* parItem = 0;
-
-            do
-            {
-                parItem = dynamic_cast<ControlPointContentDirectoryItem*>(curItem);
-                curItem = curItem->parent();
-            }while (!parItem);
-
-            parItem->browser()->browse(HBrowseParams(cdsContainerItem->container()->id(),
-                                                     HBrowseParams::ObjectAndDirectChildren));
+        case ControlPointDetailDisplayItem::ContentDirectory:
+        case ControlPointDetailDisplayItem::CdsContainer:
+            updateDetailDisplay(
+                    static_cast<ControlPointNavigatorItem*>(item->itemPointer()));
+            break;
+        case ControlPointDetailDisplayItem::Item:
+            //For Player!
+            break;
+        default:
+            break;
         }
+    }
+
+}
+
+void ControlPointWindow::on_detaiDisplaylView_clicked(QModelIndex index)
+{
+    if (index.isValid())
+    {
+        m_pUi->actionProperties->setEnabled(true);
+        m_pLastSelectedItem =
+                static_cast<ControlPointDetailDisplayItem*>(index.internalPointer());
+
+        ControlPointDetailDisplayItem* item =
+                static_cast<ControlPointDetailDisplayItem*>(index.internalPointer());
+
+        m_pUi->statusBar->showMessage(item->toolTip());
     }
 }
 
-void ControlPointWindow::objectsBrowserd(Herqq::Upnp::Av::HMediaBrowser *browser,
-                                        const QSet<QString> &ids)
+void ControlPointWindow::on_detaiDisplaylView_pressed(QModelIndex index)
 {
+    if (QApplication::mouseButtons() == Qt::RightButton)
+    {
+        m_pUi->actionProperties->setEnabled(true);
+        m_pLastSelectedItem =
+                static_cast<ControlPointDetailDisplayItem*>(index.internalPointer());
 
+        m_pPopUpMenu->exec(QCursor::pos());
+    }
+}
+
+void ControlPointWindow::on_actionProperties_triggered()
+{
+    ControlPointPropertyDialog dlg(m_pLastSelectedItem, this);
+    dlg.exec();
 }

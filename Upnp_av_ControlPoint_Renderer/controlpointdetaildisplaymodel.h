@@ -28,7 +28,6 @@ private:
         H_DISABLE_COPY(NavigatorItemVisitor)
     private:
         ControlPointDetailDisplayModel* m_pOwner;
-        ControlPointNavigatorItem* m_pCurItem;
 
         Herqq::Upnp::HUdn findCurrentDeviceUdn(ControlPointCdsContainerItem*);
 
@@ -44,6 +43,7 @@ private:
     void clearModel();
 
     QList<ControlPointDetailDisplayItem*> m_modelData;
+    ControlPointNavigatorItem* m_pCurItem;
     Herqq::Upnp::HUdn m_rootDeviceUdn;
 
 
@@ -60,7 +60,8 @@ public:
     void deviceRemoved(const Herqq::Upnp::HUdn&);
     void init(ControlPointNavigatorItem*);
 
-    ControlPointNavigatorItem* currentItem();
+    ControlPointNavigatorItem* currentItem() const;
+    QString path(ControlPointNavigatorItem*);
 
 signals:
 
