@@ -5,6 +5,7 @@
 #include "controlpointdetaildisplaymodel.h"
 
 #include <QMainWindow>
+#include <QTimer>
 #include <QStandardItemModel>
 
 #include <HUpnpAv/HUpnpAv>
@@ -36,6 +37,8 @@ private:
 
     bool isFocusOnTreeView;
     QMenu* m_pPopUpMenu;
+    QTimer m_timer;
+    int m_curChild;
 
     Herqq::Upnp::Av::HAvControlPoint* m_pControlPoint;
 
@@ -55,6 +58,7 @@ private slots:
     void mediaServerOnline(Herqq::Upnp::Av::HMediaServerAdapter*);
     void mediaServerOffline(Herqq::Upnp::Av::HMediaServerAdapter*);
     void objectsBrowserd(Herqq::Upnp::Av::HMediaBrowser*, const QSet<QString>&);
+    void preLoadSubContainer();
 
 Q_SIGNALS:
     void startInit();

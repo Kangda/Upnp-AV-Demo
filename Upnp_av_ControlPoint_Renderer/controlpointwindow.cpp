@@ -50,6 +50,13 @@ ControlPointWindow::ControlPointWindow(QWidget *parent) :
                  );
     Q_ASSERT(ok);
 
+    ok = connect(&m_timer,
+                 SIGNAL(timeout()),
+                 this,
+                 SLOT(preLoadSubContainer())
+                 );
+    Q_ASSERT(ok);
+
     m_pNavModel = new ControlPointNavigatorModel(this);
     m_pUi->navigatorTreeView->setModel(m_pNavModel);
 
@@ -69,6 +76,7 @@ ControlPointWindow::~ControlPointWindow()
     delete m_pUi;
     delete m_pNavModel;
     delete m_pDetailModel;
+    delete m_pPopUpMenu;
     delete m_pControlPoint;
 
 }
@@ -156,10 +164,12 @@ void ControlPointWindow::updateDetailDisplay(ControlPointNavigatorItem* item)
     m_pUi->pathLine->setText(m_pDetailModel->path(item));
 
     //prebrowser folders in current dir
-    for (int i = 0; i < item->childCount(); ++i)
-    {
-        getCdsContainerDetail(item->child(i));
-    }
+//    for (int i = 0; i < item->childCount(); ++i)
+//    {
+//        getCdsContainerDetail(item->child(i));
+//    }
+    m_curChild = 0;
+    m_timer.start(500);
 }
 
 bool ControlPointWindow::getCdsContainerDetail(ControlPointNavigatorItem* navItem)
@@ -183,6 +193,32 @@ bool ControlPointWindow::getCdsContainerDetail(ControlPointNavigatorItem* navIte
         return false;
     }
     return true;
+}
+
+void ControlPointWindow::preLoadSubContainer()
+{
+    for (;m_curChild < m_pDetailModel->currentItem()->childCount()
+        && m_pDetailModel->currentItem()->child(m_curChild)->childCount() != 0;
+    m_curChild++)
+    {
+    }
+
+//    QMessageBox::information(this , tr("ttt"), tr("%1:%2").arg(
+//            QString::number(m_curChild),
+//            QString::number(m_curChild < m_pDetailModel->currentItem()->childCount() - 1)));
+
+    if (m_curChild >= m_pDetailModel->currentItem()->childCount())
+    {
+        m_timer.stop();
+        return;
+    }
+
+    getCdsContainerDetail(m_pDetailModel->currentItem()->child(m_curChild));
+
+    if (m_curChild >= m_pDetailModel->currentItem()->childCount() - 1)
+        m_timer.stop();
+
+    ++m_curChild;
 }
 
 void ControlPointWindow::on_navigatorTreeView_clicked(QModelIndex index)
@@ -223,8 +259,10 @@ void ControlPointWindow::on_detaiDisplaylView_activated(QModelIndex index)
         {
         case ControlPointDetailDisplayItem::ContentDirectory:
         case ControlPointDetailDisplayItem::CdsContainer:
-            updateDetailDisplay(
-                    static_cast<ControlPointNavigatorItem*>(item->itemPointer()));
+            if (getCdsContainerDetail(static_cast<ControlPointNavigatorItem*>
+                                      (item->itemPointer())))
+                updateDetailDisplay(
+                        static_cast<ControlPointNavigatorItem*>(item->itemPointer()));
             break;
         case ControlPointDetailDisplayItem::Item:
             //For Player!
