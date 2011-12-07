@@ -105,7 +105,7 @@ void MediaServerWindow::mediaServerInitilization()
     deviceHostConfig.add(deviceConfig);
 
     //Initialization of the Device Host
-    m_pDeviceHost = new HDeviceHost(this);
+    m_pDeviceHost = new HDeviceHost();
     if (!m_pDeviceHost->init(deviceHostConfig))
     {
         Q_ASSERT_X(false, "DeviceHost", m_pDeviceHost->errorDescription().toLocal8Bit());

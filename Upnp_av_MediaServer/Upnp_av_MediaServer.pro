@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network xml
+QT       += core gui network xml testlib
 
 TARGET = Upnp_av_MediaServer
 TEMPLATE = app

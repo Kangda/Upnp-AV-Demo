@@ -57,7 +57,11 @@ SOURCES += main.cpp\
     controlpointnavigatoritemvisitor.cpp \
     controlpointdetaildisplayitem.cpp \
     controlpointdetaildisplaymodel.cpp \
-    controlpointpropertydialog.cpp
+    controlpointpropertydialog.cpp \
+    mediarendererconnection.cpp \
+    mediarendererconnectionmanager.cpp \
+    mediarendererdisplaywindow.cpp \
+    mediarenderermanager.cpp
 
 HEADERS  += controlpointwindow.h \
     controlpointnavigatormodel.h \
@@ -65,10 +69,15 @@ HEADERS  += controlpointwindow.h \
     controlpointnavigatoritemvisitor.h \
     controlpointdetaildisplayitem.h \
     controlpointdetaildisplaymodel.h \
-    controlpointpropertydialog.h
+    controlpointpropertydialog.h \
+    mediarendererconnection.h \
+    mediarendererconnectionmanager.h \
+    mediarendererdisplaywindow.h \
+    mediarenderermanager.h
 
 FORMS    += controlpointwindow.ui \
-    controlpointpropertydialog.ui
+    controlpointpropertydialog.ui \
+    mediarendererdisplaywindow.ui
 
 RESOURCES += \
     resource.qrc
