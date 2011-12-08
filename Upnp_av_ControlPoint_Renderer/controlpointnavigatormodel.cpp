@@ -213,6 +213,7 @@ void ControlPointNavigatorModel::objectBrowsered(Herqq::Upnp::Av::HMediaBrowser 
 
 void ControlPointNavigatorModel::browserFailed(Herqq::Upnp::Av::HMediaBrowser *browser)
 {
+    Q_UNUSED(browser);
 }
 
 void ControlPointNavigatorModel::mediaServerOffline(

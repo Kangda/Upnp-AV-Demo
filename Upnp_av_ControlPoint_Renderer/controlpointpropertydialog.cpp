@@ -24,8 +24,8 @@ using namespace Herqq::Upnp::Av;
 ControlPointPropertyDialog::ControlPointPropertyDialog(ControlPointDetailDisplayItem* item,
                                                        QWidget *parent) :
     QDialog(parent),
-    m_pItem(item),
-    m_pUi(new Ui::ControlPointPropertyDialog)
+    m_pUi(new Ui::ControlPointPropertyDialog),
+    m_pItem(item)
 {
     m_pUi->setupUi(this);
 

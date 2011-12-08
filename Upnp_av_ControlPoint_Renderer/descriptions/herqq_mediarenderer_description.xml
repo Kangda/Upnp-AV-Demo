@@ -6,10 +6,10 @@
     </specVersion>
     <device>
         <deviceType>urn:schemas-upnp-org:device:MediaRenderer:2</deviceType>
-        <friendlyName>HUPnPAv Test Media Renderer</friendlyName>
+        <friendlyName>Media Renderer</friendlyName>
         <manufacturer>Herqq</manufacturer>
         <manufacturerURL>www.herqq.org</manufacturerURL>
-        <modelDescription>Media Renderer for testing HUPnPAv</modelDescription>
+        <modelDescription>Media Renderer Within Control Point</modelDescription>
         <modelName>HerqqTestMediaRenderer</modelName>
         <modelNumber>0.1</modelNumber>
         <modelURL>www.herqq.org</modelURL>

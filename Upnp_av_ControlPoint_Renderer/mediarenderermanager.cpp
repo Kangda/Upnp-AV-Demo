@@ -3,12 +3,15 @@
 
 #include <HUpnpAv/HMediaRendererDeviceConfiguration>
 #include <HUpnpAv/HAvDeviceModelCreator>
+#include <HUpnpAv/HAvControlPoint>
+#include <HUpnpAv/HMediaRendererAdapter>
 #include <HUpnpAv/HAbstractMediaRendererDevice>
 #include <HUpnpAv/HAbstractConnectionManagerService>
 
 #include <HUpnpCore/HDeviceConfiguration>
 #include <HUpnpCore/HDeviceHostConfiguration>
 #include <HUpnpCore/HServerStateVariable>
+#include <HUpnpCore/HDeviceInfo>
 
 #include <QNetworkAccessManager>
 #include <QDebug>
@@ -20,8 +23,13 @@ using namespace Herqq::Upnp::Av;
  MediaRendererManager
 ***************************************/
 
-MediaRendererManager::MediaRendererManager() :
+MediaRendererManager::MediaRendererManager(Herqq::Upnp::Av::HAvControlPoint *cp) :
+        QObject(),
+        m_pDeviceHost(0),
+        m_pControlPoint(cp),
+        m_pMediaRenderer(0),
         m_pConnectionMgr(new MediaRendererConnectionManager(this)),
+        m_pCurWindow(0),
         m_pNetworkMgr(new QNetworkAccessManager(this))
 {
     HMediaRendererDeviceConfiguration mediaRendererConfig;
@@ -44,8 +52,13 @@ MediaRendererManager::MediaRendererManager() :
         Q_ASSERT(false);
     }
 
-    m_pMediaRenderer =
-            qobject_cast<HAbstractMediaRendererDevice*>(m_pDeviceHost->rootDevices().at(0));
+//    bool ok = connect(
+//            m_pControlPoint,
+//            SIGNAL(mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*)),
+//            this,
+//            SLOT(mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*)));
+//    Q_ASSERT(ok);
+//    Q_UNUSED(ok);
 
 //    HServerStateVariable* currentConnectionIDs =
 //            m_pMediaRenderer->connectionManager()->
@@ -57,11 +70,32 @@ MediaRendererManager::~MediaRendererManager()
 {
     delete m_pConnectionMgr;
     delete m_pDeviceHost;
-    delete m_pMediaRenderer;
     delete m_pNetworkMgr;
 }
 
-HAbstractMediaRendererDevice* MediaRendererManager::mediaRenderer() const
+HMediaRendererAdapter* MediaRendererManager::mediaRendererAdapter() const
 {
     return m_pMediaRenderer;
+}
+
+void MediaRendererManager::setMediaRendererAdapter(
+        Herqq::Upnp::Av::HMediaRendererAdapter *adapter)
+{
+    m_pMediaRenderer = adapter;
+}
+
+void MediaRendererManager::setDisplayWindow(MediaRendererDisplayWindow *win)
+{
+    m_pCurWindow = win;
+}
+
+void MediaRendererManager::mediaRendererOnline(
+        Herqq::Upnp::Av::HMediaRendererAdapter *deviceAdapter)
+{
+    if (deviceAdapter->device()->parentDevice()->
+        info().modelDescription().
+        compare("Media Renderer Within Control Point", Qt::CaseInsensitive) == 0)
+    {
+        m_pMediaRenderer = deviceAdapter;
+    }
 }

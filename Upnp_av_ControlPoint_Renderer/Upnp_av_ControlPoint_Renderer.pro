@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network xml testlib
+QT       += core gui network xml phonon testlib
 
 TARGET = Upnp_av_ControlPoint_Renderer
 TEMPLATE = app

@@ -125,8 +125,8 @@ void ControlPointRootItem::getDetail(ControlPointNavigatorItemVisitor */*Visitor
 
 ControlPointContainerItem::ControlPointContainerItem(const QString &name,
                                                      ControlPointNavigatorItem *parent):
-    m_name(name),
-    ControlPointNavigatorItem(parent)
+    ControlPointNavigatorItem(parent),
+    m_name(name)
 {
     m_type = Container;
 }
@@ -152,8 +152,8 @@ void ControlPointContainerItem::getDetail(ControlPointNavigatorItemVisitor *Visi
 ControlPointContentDirectoryItem::ControlPointContentDirectoryItem(
         Herqq::Upnp::Av::HMediaBrowser *browser,
         ControlPointNavigatorItem *parent):
-        m_pBrowser(browser),
-        ControlPointNavigatorItem(parent)
+        ControlPointNavigatorItem(parent),
+        m_pBrowser(browser)
 {
     Q_ASSERT(m_pBrowser);
     m_type = ContentDirectory;
@@ -182,9 +182,9 @@ ControlPointCdsContainerItem::ControlPointCdsContainerItem(
         Herqq::Upnp::Av::HContainer *container,
         Herqq::Upnp::Av::HCdsDataSource *datasource,
         ControlPointNavigatorItem *parent):
+        ControlPointNavigatorItem(parent),
         m_pContainer(container),
-        m_pDataSource(datasource),
-        ControlPointNavigatorItem(parent)
+        m_pDataSource(datasource)
 {
     Q_ASSERT(m_pDataSource);
     Q_ASSERT(m_pContainer);

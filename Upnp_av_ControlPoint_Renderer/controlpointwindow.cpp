@@ -3,6 +3,8 @@
 #include "controlpointnavigatoritem.h"
 #include "controlpointdetaildisplayitem.h"
 #include "controlpointpropertydialog.h"
+#include "mediarenderermanager.h"
+#include "mediarendererdisplaywindow.h"
 
 #include <QMenu>
 #include <QStandardItem>
@@ -13,6 +15,7 @@
 #include <HUpnpAv/HMediaBrowser>
 #include <HUpnpAv/HAvControlPoint>
 #include <HUpnpAv/HMediaServerAdapter>
+#include <HUpnpAv/HMediaRendererAdapter>
 #include <HUpnpAv/HAvControlPointConfiguration>
 
 #include <QMessageBox>
@@ -57,17 +60,21 @@ ControlPointWindow::ControlPointWindow(QWidget *parent) :
                  );
     Q_ASSERT(ok);
 
+    ok = m_pControlPoint->init();
+    Q_ASSERT(ok);
+
+    //Initialize Renderer.
+    m_pRendererMgr = new MediaRendererManager(m_pControlPoint);
+
+    //Set Model.
     m_pNavModel = new ControlPointNavigatorModel(this);
     m_pUi->navigatorTreeView->setModel(m_pNavModel);
 
     m_pDetailModel = new ControlPointDetailDisplayModel(this);
     m_pUi->detaiDisplaylView->setModel(m_pDetailModel);
 
+    //Adjust Ui.
     uiInitialization();
-
-    ok = m_pControlPoint->init();
-    Q_ASSERT(ok);
-
 }
 
 ControlPointWindow::~ControlPointWindow()
@@ -103,12 +110,7 @@ void ControlPointWindow::mediaServerOnline(
 {
     //QMessageBox::information(this, tr("test"), tr("test"));
     HMediaBrowser* browser = m_pNavModel->mediaServerOnline(deviceAdapter);
-//    bool ok = connect(
-//            browser,
-//            SIGNAL(objectsBrowsed(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>)),
-//            this,
-//            SLOT(objectsBrowsed(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>))
-//            );
+
     bool ok = connect(
             browser,
             SIGNAL(objectsBrowsed(Herqq::Upnp::Av::HMediaBrowser*,QSet<QString>)),
@@ -125,6 +127,26 @@ void ControlPointWindow::mediaServerOffline(
 {
     //m_pControlPoint->removeMediaServer(deviceAdapter);
     m_pNavModel->mediaServerOffline(deviceAdapter);
+}
+
+void ControlPointWindow::mediaRendererOnline(
+        Herqq::Upnp::Av::HMediaRendererAdapter *deviceAdapter)
+{
+    Q_UNUSED(deviceAdapter);
+//    if (deviceAdapter->device()->parentDevice()->
+//        info().modelDescription().
+//        compare("Media Renderer Within Control Point", Qt::CaseInsensitive) == 0)
+//    {
+//        m_pRendererMgr->setMediaRendererAdapter(deviceAdapter);
+//    }
+//    QMessageBox::warning(this, tr("mediaRendererOnline()"),
+//                         tr("%1").arg(deviceAdapter->device()->parentDevice()->
+//                                      info().modelDescription()));
+}
+
+void ControlPointWindow::mediaRendererOffline(
+        Herqq::Upnp::Av::HMediaRendererAdapter *)
+{
 }
 
 void ControlPointWindow::closeEvent(QCloseEvent *)
@@ -259,13 +281,31 @@ void ControlPointWindow::on_detaiDisplaylView_activated(QModelIndex index)
         {
         case ControlPointDetailDisplayItem::ContentDirectory:
         case ControlPointDetailDisplayItem::CdsContainer:
-            if (getCdsContainerDetail(static_cast<ControlPointNavigatorItem*>
-                                      (item->itemPointer())))
-                updateDetailDisplay(
-                        static_cast<ControlPointNavigatorItem*>(item->itemPointer()));
+            {
+                if (getCdsContainerDetail(static_cast<ControlPointNavigatorItem*>
+                                          (item->itemPointer())))
+                    updateDetailDisplay(
+                            static_cast<ControlPointNavigatorItem*>(item->itemPointer()));
+            }
             break;
         case ControlPointDetailDisplayItem::Item:
             //For Player!
+            {
+                if (!m_pRendererMgr->mediaRendererAdapter())
+                {
+                    break;
+                }
+
+                MediaRendererDisplayWindow* itemDisplay =
+                        new MediaRendererDisplayWindow(
+                                m_pControlPoint,
+                                m_pRendererMgr->mediaRendererAdapter(),
+                                static_cast<HItem*>(item->itemPointer()),
+                                this);
+                m_pRendererMgr->setDisplayWindow(itemDisplay);
+
+                itemDisplay->show();
+            }
             break;
         default:
             break;

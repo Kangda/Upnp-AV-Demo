@@ -8,6 +8,7 @@
 
 class QNetworkAccessManager;
 class MediaRendererConnectionManager;
+class MediaRendererDisplayWindow;
 
 class MediaRendererManager : public QObject
 {
@@ -17,18 +18,25 @@ friend class MediaRendererConnectionManager;
 
 public:
 
-    MediaRendererManager();
+    MediaRendererManager(Herqq::Upnp::Av::HAvControlPoint*);
     ~MediaRendererManager();
 
-    Herqq::Upnp::Av::HAbstractMediaRendererDevice* mediaRenderer() const;
+    void setMediaRendererAdapter(Herqq::Upnp::Av::HMediaRendererAdapter*);
+    Herqq::Upnp::Av::HMediaRendererAdapter* mediaRendererAdapter() const;
+    void setDisplayWindow(MediaRendererDisplayWindow*);
 
 private:
     Herqq::Upnp::HDeviceHost* m_pDeviceHost;
-    Herqq::Upnp::Av::HAbstractMediaRendererDevice* m_pMediaRenderer;
+    Herqq::Upnp::Av::HAvControlPoint* m_pControlPoint;
+    Herqq::Upnp::Av::HMediaRendererAdapter* m_pMediaRenderer;
 
     MediaRendererConnectionManager* m_pConnectionMgr;
+    MediaRendererDisplayWindow* m_pCurWindow;
 
     QNetworkAccessManager* m_pNetworkMgr;
+
+private slots:
+    void mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*);
 
 };
 

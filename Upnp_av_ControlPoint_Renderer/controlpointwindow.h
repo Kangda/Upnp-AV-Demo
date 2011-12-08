@@ -12,6 +12,7 @@
 #include <HUpnpCore/HClientDevice>
 
 class QMenu;
+class MediaRendererManager;
 
 
 namespace Ui {
@@ -41,6 +42,7 @@ private:
     int m_curChild;
 
     Herqq::Upnp::Av::HAvControlPoint* m_pControlPoint;
+    MediaRendererManager* m_pRendererMgr;
 
     ControlPointNavigatorModel* m_pNavModel;
     ControlPointDetailDisplayModel* m_pDetailModel;
@@ -57,6 +59,8 @@ private slots:
     void on_navigatorTreeView_clicked(QModelIndex index);
     void mediaServerOnline(Herqq::Upnp::Av::HMediaServerAdapter*);
     void mediaServerOffline(Herqq::Upnp::Av::HMediaServerAdapter*);
+    void mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*);
+    void mediaRendererOffline(Herqq::Upnp::Av::HMediaRendererAdapter*);
     void objectsBrowserd(Herqq::Upnp::Av::HMediaBrowser*, const QSet<QString>&);
     void preLoadSubContainer();
 

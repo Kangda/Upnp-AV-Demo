@@ -21,8 +21,8 @@ ControlPointDetailDisplayItem::ControlPointDetailDisplayItem(DetailDisplayItemTy
                                                              ControlPointNavigatorItem *navItem,
                                                              HItem *hItem,
                                                              ControlPointNavigatorItem* parent):
-    m_pParent(parent),
-    QStandardItem()
+    QStandardItem(),
+    m_pParent(parent)
 {
     m_type = type;
     switch (m_type)
