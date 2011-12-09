@@ -124,6 +124,7 @@ protected:
 
     virtual qint32 doPlay(const QString& arg);
     virtual qint32 doStop();
+    virtual qint32 doPause();
 
     virtual qint32 doSeek(const Herqq::Upnp::Av::HSeekInfo& seekInfo);
     virtual qint32 doNext();
@@ -162,6 +163,7 @@ protected:
 
     virtual qint32 doPlay(const QString& arg);
     virtual qint32 doStop();
+    virtual qint32 doPause();
 
     virtual qint32 doSeek(const Herqq::Upnp::Av::HSeekInfo& seekInfo);
     virtual qint32 doNext();

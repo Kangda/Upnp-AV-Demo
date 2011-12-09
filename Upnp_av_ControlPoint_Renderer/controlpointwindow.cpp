@@ -53,6 +53,13 @@ ControlPointWindow::ControlPointWindow(QWidget *parent) :
                  );
     Q_ASSERT(ok);
 
+    ok = connect(
+            m_pControlPoint,
+            SIGNAL(mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*)),
+            this,
+            SLOT(mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*)));
+    Q_ASSERT(ok);
+
     ok = connect(&m_timer,
                  SIGNAL(timeout()),
                  this,
@@ -133,12 +140,11 @@ void ControlPointWindow::mediaRendererOnline(
         Herqq::Upnp::Av::HMediaRendererAdapter *deviceAdapter)
 {
     Q_UNUSED(deviceAdapter);
-//    if (deviceAdapter->device()->parentDevice()->
-//        info().modelDescription().
-//        compare("Media Renderer Within Control Point", Qt::CaseInsensitive) == 0)
-//    {
-//        m_pRendererMgr->setMediaRendererAdapter(deviceAdapter);
-//    }
+    if (deviceAdapter->device()->info().modelDescription().
+        compare("Media Renderer Within Control Point", Qt::CaseInsensitive) == 0)
+    {
+        m_pRendererMgr->setMediaRendererAdapter(deviceAdapter);
+    }
 //    QMessageBox::warning(this, tr("mediaRendererOnline()"),
 //                         tr("%1").arg(deviceAdapter->device()->parentDevice()->
 //                                      info().modelDescription()));
@@ -293,18 +299,17 @@ void ControlPointWindow::on_detaiDisplaylView_activated(QModelIndex index)
             {
                 if (!m_pRendererMgr->mediaRendererAdapter())
                 {
+                    QMessageBox::warning(this,
+                                         tr("on_detaiDisplaylView_activated()"),
+                                         tr("No Renderering Connection."));
                     break;
                 }
 
-                MediaRendererDisplayWindow* itemDisplay =
-                        new MediaRendererDisplayWindow(
-                                m_pControlPoint,
-                                m_pRendererMgr->mediaRendererAdapter(),
-                                static_cast<HItem*>(item->itemPointer()),
-                                this);
-                m_pRendererMgr->setDisplayWindow(itemDisplay);
-
-                itemDisplay->show();
+                m_pRendererMgr->newDisplayWindow(
+                        m_pControlPoint,
+                        m_pRendererMgr->mediaRendererAdapter(),
+                        static_cast<HItem*>(item->itemPointer()),
+                        this);
             }
             break;
         default:

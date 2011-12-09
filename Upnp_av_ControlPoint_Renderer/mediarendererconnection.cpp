@@ -14,6 +14,7 @@
 #include <QTextEdit>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QMessageBox>
 
 using namespace Herqq::Upnp;
 using namespace Herqq::Upnp::Av;
@@ -27,6 +28,7 @@ MediaRendererConnection::MediaRendererConnection(QObject *parent) :
         HRendererConnection(parent),
         m_isPlaying(false)
 {
+
 }
 
 MediaRendererConnection::~MediaRendererConnection()
@@ -75,6 +77,13 @@ void MediaRendererConnectionForText::setup()
 {
     if (m_isPlaying)
     {
+
+        if (m_currentData.isEmpty())
+        {
+            QMessageBox::warning(0, tr("setup()"), tr("No data to present."));
+            m_isPlaying = false;
+            return;
+        }
         m_pTextEdit->setText(QString::fromUtf8(m_currentData));
         m_pTextEdit->setEnabled(true);
     }
@@ -87,6 +96,11 @@ void MediaRendererConnectionForText::setup()
 
 void MediaRendererConnectionForText::finished()
 {
+    if (!m_pCurrentResource)
+    {
+        QMessageBox::warning(0, tr("finished()"), tr("No Reply"));
+        return;
+    }
     m_currentData = m_pCurrentResource->readAll();
     m_pCurrentResource->deleteLater();
     m_pCurrentResource = 0;
@@ -141,6 +155,8 @@ qint32 MediaRendererConnectionForText::doSetResource(
     Q_UNUSED(resourceUri);
     Q_UNUSED(cdsObjectData);
 
+     //QMessageBox::warning(0, tr("setup()"), resourceUri.toString());
+
     QNetworkRequest req(resourceUri);
     m_pCurrentResource = m_pNetworkMgr->get(req);
     bool ok = connect(m_pCurrentResource, SIGNAL(finished()), this, SLOT(finished()));
@@ -193,13 +209,17 @@ void MediaRendererConnectionForImage::setup()
 {
     if (m_isPlaying)
     {
+  //      QMessageBox::information(0, tr(""), tr("Loaded Pixmap."));
+
         m_pImageContainer->setPixmap(
                 m_pImage->scaled(m_pImageContainer->size(), Qt::KeepAspectRatio));
     }
     else //if stopped, black instead
     {
+        QMessageBox::information(0, tr(""), tr("not Loaded Pixmap."));
         m_pImage->fill(QColor(Qt::black));
-        m_pImageContainer->setPixmap(m_pImage->scaled(m_pImageContainer->size()));
+        m_pImageContainer->setPixmap(m_pImage->scaled(m_pImageContainer->size(),
+                                                      Qt::KeepAspectRatio));
     }
 }
 
@@ -360,6 +380,13 @@ qint32 MediaRendererConnectionForAudio::doStop()
     return UpnpSuccess;
 }
 
+qint32 MediaRendererConnectionForAudio::doPause()
+{
+    m_mediaObject.pause();
+
+    return UpnpSuccess;
+}
+
 qint32 MediaRendererConnectionForAudio::doSeek(const HSeekInfo& seekInfo)
 {
     Q_UNUSED(seekInfo);
@@ -491,6 +518,13 @@ qint32 MediaRendererConnectionForVideo::doPlay(const QString &arg)
 qint32 MediaRendererConnectionForVideo::doStop()
 {
     m_mediaObject.stop();
+
+    return UpnpSuccess;
+}
+
+qint32 MediaRendererConnectionForVideo::doPause()
+{
+    m_mediaObject.pause();
 
     return UpnpSuccess;
 }

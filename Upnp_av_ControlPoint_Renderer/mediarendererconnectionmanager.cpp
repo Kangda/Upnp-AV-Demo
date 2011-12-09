@@ -3,6 +3,8 @@
 #include "mediarenderermanager.h"
 
 #include <HUpnpAv/HRendererConnection>
+#include <HUpnpAv/HConnection>
+#include <HUpnpAv/HConnectionInfo>
 
 using namespace Herqq::Upnp;
 using namespace Herqq::Upnp::Av;
@@ -32,20 +34,38 @@ HRendererConnection* MediaRendererConnectionManager::doCreate(
                  "UNKNOWN" :
                  contentFormat;
 
-    m_pOwner->m_pCurWindow->initializeRenderingControl(cf, m_pOwner->m_pNetworkMgr);
+    MediaRendererDisplayWindow* curWin = 0;
 
-    if (!m_pOwner->m_pCurWindow->renderingControlConnection())
+    foreach(MediaRendererDisplayWindow* win, m_pOwner->m_displayWindows)
     {
+        if (win->connection() == 0)
+        //Now, the connection has not built yet. So no HConnecton Object exists.
+        {
+            curWin = win;
+            break;
+        }
+    }
+
+    if (!curWin)
+    {
+        return 0;
+    }
+
+    curWin->initializeRenderingControl(cf, m_pOwner->m_pNetworkMgr);
+
+    if (!curWin->renderingControlConnection())
+    {
+        curWin->deleteLater();
         return 0;
     }
 
     bool ok = QObject::connect(
             m_pOwner,
             SIGNAL(destroyed()),
-            m_pOwner->m_pCurWindow,
+            curWin,
             SLOT(deleteLater()));
     Q_ASSERT(ok);
     Q_UNUSED(ok);
 
-    return m_pOwner->m_pCurWindow->renderingControlConnection();
+    return curWin->renderingControlConnection();
 }

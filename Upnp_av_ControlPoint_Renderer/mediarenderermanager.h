@@ -5,6 +5,7 @@
 #include <HUpnpAv/HUpnpAv>
 
 #include <QObject>
+#include <QSet>
 
 class QNetworkAccessManager;
 class MediaRendererConnectionManager;
@@ -24,6 +25,10 @@ public:
     void setMediaRendererAdapter(Herqq::Upnp::Av::HMediaRendererAdapter*);
     Herqq::Upnp::Av::HMediaRendererAdapter* mediaRendererAdapter() const;
     void setDisplayWindow(MediaRendererDisplayWindow*);
+    void newDisplayWindow(Herqq::Upnp::Av::HAvControlPoint*,
+                          Herqq::Upnp::Av::HMediaRendererAdapter*,
+                          Herqq::Upnp::Av::HItem*,
+                          QWidget *parent = 0);
 
 private:
     Herqq::Upnp::HDeviceHost* m_pDeviceHost;
@@ -31,12 +36,13 @@ private:
     Herqq::Upnp::Av::HMediaRendererAdapter* m_pMediaRenderer;
 
     MediaRendererConnectionManager* m_pConnectionMgr;
-    MediaRendererDisplayWindow* m_pCurWindow;
+    QSet<MediaRendererDisplayWindow*> m_displayWindows;
 
     QNetworkAccessManager* m_pNetworkMgr;
 
 private slots:
     void mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*);
+    void closeDisplayWindow(QObject*);
 
 };
 

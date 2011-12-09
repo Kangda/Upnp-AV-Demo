@@ -26,6 +26,7 @@ public:
     ~MediaRendererDisplayWindow();
 
     Herqq::Upnp::Av::HRendererConnection* renderingControlConnection() const;
+    Herqq::Upnp::Av::HConnection* connection() const;
     void initializeRenderingControl(const QString&, QNetworkAccessManager*);
 
     enum State
@@ -77,6 +78,9 @@ private slots:
         const Herqq::Upnp::HClientAdapterOpNull& op);
     void stopCompleted(
         Herqq::Upnp::Av::HAvTransportAdapter* source,
+        const Herqq::Upnp::HClientAdapterOpNull &op);
+    void pauseCompleted(
+        Herqq::Upnp::Av::HAvTransportAdapter *source,
         const Herqq::Upnp::HClientAdapterOpNull &op);
     void setAVTransportURICompleted(
         Herqq::Upnp::Av::HAvTransportAdapter* source,

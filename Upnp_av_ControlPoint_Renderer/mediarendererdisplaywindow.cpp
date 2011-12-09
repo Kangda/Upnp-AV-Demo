@@ -8,6 +8,7 @@
 
 #include <HUpnpAv/HRendererConnection>
 #include <HUpnpAv/HItem>
+#include <HUpnpAv/HDuration>
 #include <HUpnpAv/HResource>
 #include <HUpnpAv/HContainer>
 #include <HUpnpAv/HConnection>
@@ -63,19 +64,18 @@ MediaRendererDisplayWindow::MediaRendererDisplayWindow(
     m_pConnection(0),
     m_pCurItem(item),
     m_connectionRetrieveOp(),
+    m_state(Stopped),
+    m_isPlaying(false),
     m_pRenderingConnection(0)
 {
     m_pUi->setupUi(this);
-
-    m_state = Stopped;
-    m_isPlaying = false;
 }
 
 MediaRendererDisplayWindow::~MediaRendererDisplayWindow()
 {
-    delete m_pUi;
     if (m_pRenderingConnection)
-        delete m_pRenderingConnection;
+        m_pRenderingConnection->deleteLater();
+    delete m_pUi;
 }
 
 void MediaRendererDisplayWindow::initializeRenderingControl(
@@ -84,7 +84,12 @@ void MediaRendererDisplayWindow::initializeRenderingControl(
     Q_UNUSED(cf);
     Q_UNUSED(netMgr);
 
-
+    if (!m_pUi)
+    {
+        QMessageBox::critical(0, tr("initializeRenderingControl()"),
+                              tr("Unknown Error with m_pUi, Please retry."));
+        return;
+    }
 
     if (isText(cf))
     {
@@ -125,6 +130,14 @@ void MediaRendererDisplayWindow::initializeRenderingControl(
         Q_ASSERT(ok);
         Q_UNUSED(ok);
     }
+
+//    m_pUi->timeLabel->setText(QString("%1:%2:%3").
+//                              arg(QString::number(m_pRenderingConnection->info()->mediaInfo().
+//                                                  mediaDuration().hours()),
+//                                  QString::number(m_pRenderingConnection->info()->mediaInfo().
+//                                                  mediaDuration().minutes()),
+//                                  QString::number(m_pRenderingConnection->info()->mediaInfo().
+//                                                  mediaDuration().seconds())));
 }
 
 void MediaRendererDisplayWindow::mediaRendererOffline(
@@ -141,7 +154,7 @@ void MediaRendererDisplayWindow::mediaRendererOffline(
 void MediaRendererDisplayWindow::connectionReady(
         Herqq::Upnp::Av::HMediaRendererAdapter *rendererAdapter, qint32 cid)
 {
-    if (m_state == Connecting ||
+    if (m_state != Connecting ||
         m_connectionRetrieveOp.returnValue() != UpnpSuccess ||
         m_connectionRetrieveOp.value() != cid)
     {
@@ -188,6 +201,14 @@ void MediaRendererDisplayWindow::connectionReady(
                  this,
                  SLOT(stopCompleted(Herqq::Upnp::Av::HAvTransportAdapter*,
                                     Herqq::Upnp::HClientAdapterOpNull)));
+    Q_ASSERT(ok);
+
+    ok = connect(m_pConnection->transport(),
+                 SIGNAL(pauseCompleted(Herqq::Upnp::Av::HAvTransportAdapter*,
+                                       Herqq::Upnp::HClientAdapterOpNull)),
+                 this,
+                 SLOT(pauseCompleted(Herqq::Upnp::Av::HAvTransportAdapter*,
+                                     Herqq::Upnp::HClientAdapterOpNull)));
     Q_ASSERT(ok);
 
     ok = connect(
@@ -303,6 +324,17 @@ void MediaRendererDisplayWindow::stopCompleted(
     enableControl(true);
 }
 
+void MediaRendererDisplayWindow::pauseCompleted(
+        Herqq::Upnp::Av::HAvTransportAdapter *source,
+        const Herqq::Upnp::HClientAdapterOpNull &op)
+{
+    Q_UNUSED(source);
+    Q_UNUSED(op);
+
+    m_state = Paused;
+    enableControl(true);
+}
+
 void MediaRendererDisplayWindow::setAVTransportURICompleted(
         Herqq::Upnp::Av::HAvTransportAdapter *source,
         const Herqq::Upnp::HClientAdapterOpNull &op)
@@ -360,21 +392,21 @@ void MediaRendererDisplayWindow::enableControl(bool enable)
         m_pUi->playButton->setEnabled(true);
         if (m_state == Stopped)
         {
-            m_pUi->forwardButton->setEnabled(false);
-            m_pUi->backwardButton->setEnabled(false);
+//            m_pUi->forwardButton->setEnabled(false);
+//            m_pUi->backwardButton->setEnabled(false);
             m_pUi->stopButton->setEnabled(false);
         }
         else
         {
-            m_pUi->forwardButton->setEnabled(true);
-            m_pUi->backwardButton->setEnabled(true);
+//            m_pUi->forwardButton->setEnabled(true);
+//            m_pUi->backwardButton->setEnabled(true);
             m_pUi->stopButton->setEnabled(true);
         }
     }
     else
     {
-        m_pUi->forwardButton->setEnabled(false);
-        m_pUi->backwardButton->setEnabled(false);
+//        m_pUi->forwardButton->setEnabled(false);
+//        m_pUi->backwardButton->setEnabled(false);
         m_pUi->stopButton->setEnabled(false);
         m_pUi->playButton->setEnabled(false);
     }
@@ -385,9 +417,14 @@ HRendererConnection* MediaRendererDisplayWindow::renderingControlConnection() co
     return dynamic_cast<HRendererConnection*>(m_pRenderingConnection);
 }
 
+HConnection* MediaRendererDisplayWindow::connection() const
+{
+    return m_pConnection;
+}
+
 void MediaRendererDisplayWindow::closeEvent(QCloseEvent *e)
 {
- //   this->deleteLater();
+    this->deleteLater();
     QMainWindow::closeEvent(e);
 }
 
@@ -407,10 +444,13 @@ void MediaRendererDisplayWindow::disposed(Herqq::Upnp::Av::HRendererConnection *
 
 void MediaRendererDisplayWindow::on_playButton_clicked()
 {
-    if (m_isPlaying)
+    if (m_state == Playing/*m_isPlaying*/)
     {
-        m_isPlaying = false;
+//        m_isPlaying = false;
+        m_state = Paused;
+        m_pConnection->transport()->pause();
         m_pUi->playButton->setIcon(QIcon(":/icon/start.svg"));
+        return;
     }
     else
     {
