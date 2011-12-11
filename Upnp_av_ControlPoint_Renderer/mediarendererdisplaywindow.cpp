@@ -19,6 +19,7 @@
 #include <HUpnpAv/HConnectionManagerId>
 #include <HUpnpAv/HAvTransportAdapter>
 #include <HUpnpAv/HMediaRendererAdapter>
+#include <HUpnpAv/HMediaServerAdapter>
 #include <HUpnpAv/HConnectionManagerAdapter>
 
 
@@ -56,6 +57,7 @@ MediaRendererDisplayWindow::MediaRendererDisplayWindow(
         Herqq::Upnp::Av::HAvControlPoint *cp,
         Herqq::Upnp::Av::HMediaRendererAdapter* renderer,
         Herqq::Upnp::Av::HItem *item,
+        Herqq::Upnp::HUdn udn,
         QWidget *parent) :
     QMainWindow(parent),
     m_pUi(new Ui::MediaRendererDisplayWindow),
@@ -63,12 +65,27 @@ MediaRendererDisplayWindow::MediaRendererDisplayWindow(
     m_pRenderer(renderer),
     m_pConnection(0),
     m_pCurItem(item),
+    m_serverUdn(udn),
     m_connectionRetrieveOp(),
     m_state(Stopped),
     m_isPlaying(false),
+    m_isFirst(true),
     m_pRenderingConnection(0)
 {
     m_pUi->setupUi(this);
+
+//    if (!m_pConnection)
+//    {
+//        bool ok = connect(
+//                m_pRenderer,
+//                SIGNAL(connectionReady(Herqq::Upnp::Av::HMediaRendererAdapter*,qint32)),
+//                this,
+//                SLOT(connectionReady(Herqq::Upnp::Av::HMediaRendererAdapter*,qint32)));
+//        Q_ASSERT(ok);
+//        Q_UNUSED(ok);
+
+//        getConnection();
+//    }
 }
 
 MediaRendererDisplayWindow::~MediaRendererDisplayWindow()
@@ -84,10 +101,13 @@ void MediaRendererDisplayWindow::initializeRenderingControl(
     Q_UNUSED(cf);
     Q_UNUSED(netMgr);
 
-    if (!m_pUi)
+    if (!m_pUi || !m_pUi->scrollAreaWidgetContents)
     {
         QMessageBox::critical(0, tr("initializeRenderingControl()"),
                               tr("Unknown Error with m_pUi, Please retry."));
+
+        //m_pRenderingConnection = new MediaRendererConnection(0);
+
         return;
     }
 
@@ -151,6 +171,15 @@ void MediaRendererDisplayWindow::mediaRendererOffline(
     }
 }
 
+void MediaRendererDisplayWindow::mediaServerOffline(
+        Herqq::Upnp::Av::HMediaServerAdapter *deviceAdapter)
+{
+    if (deviceAdapter->device()->info().udn() == m_serverUdn)
+    {
+        enableControl(false);
+    }
+}
+
 void MediaRendererDisplayWindow::connectionReady(
         Herqq::Upnp::Av::HMediaRendererAdapter *rendererAdapter, qint32 cid)
 {
@@ -170,6 +199,12 @@ void MediaRendererDisplayWindow::connectionReady(
     m_pConnection->setAutoCloseConnection(true);
 
     Q_ASSERT(m_pConnection);
+
+//    if (m_isFirst)
+//    {
+//        m_isFirst = false;
+//        return;
+//    }
 
     HClientAdapterOpNull op =
             m_pConnection->transport()->setAVTransportURI(
@@ -422,9 +457,21 @@ HConnection* MediaRendererDisplayWindow::connection() const
     return m_pConnection;
 }
 
+HItem* MediaRendererDisplayWindow::item() const
+{
+    return m_pCurItem;
+}
+
 void MediaRendererDisplayWindow::closeEvent(QCloseEvent *e)
 {
-    this->deleteLater();
+    if (m_state == Playing || m_state == Paused)
+    {
+        Q_ASSERT(m_pConnection);
+        m_pConnection->transport()->stop();
+    }
+
+
+    emit close(this);
     QMainWindow::closeEvent(e);
 }
 
@@ -447,7 +494,6 @@ void MediaRendererDisplayWindow::on_playButton_clicked()
     if (m_state == Playing/*m_isPlaying*/)
     {
 //        m_isPlaying = false;
-        m_state = Paused;
         m_pConnection->transport()->pause();
         m_pUi->playButton->setIcon(QIcon(":/icon/start.svg"));
         return;
@@ -494,7 +540,7 @@ void MediaRendererDisplayWindow::on_stopButton_clicked()
     m_isPlaying = false;
     m_pUi->playButton->setIcon(QIcon(":/icon/start.svg"));
 
-    if (m_state == Playing)
+    if (m_state == Playing || m_state == Paused)
     {
         Q_ASSERT(m_pConnection);
 

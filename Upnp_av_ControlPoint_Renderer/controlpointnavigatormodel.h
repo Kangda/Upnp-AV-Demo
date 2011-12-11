@@ -54,6 +54,7 @@ private:
 public Q_SLOTS:
     void objectBrowsered(Herqq::Upnp::Av::HMediaBrowser*, const QSet<QString>&);
     void browserFailed(Herqq::Upnp::Av::HMediaBrowser*);
+    ControlPointNavigatorItem* serverContainerItem() const;
 
     //void error(Herqq::Upnp::Av::HMediaServerAdapter*,
     //           const Herqq::Upnp::HClientAdapterOp<qint32>&);

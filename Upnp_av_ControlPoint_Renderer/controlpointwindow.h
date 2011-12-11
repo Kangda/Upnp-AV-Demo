@@ -51,6 +51,7 @@ private:
 
 
 private slots:
+    void on_actionRefresh_triggered();
     void on_actionProperties_triggered();
     void on_detaiDisplaylView_pressed(QModelIndex index);
     void on_detaiDisplaylView_clicked(QModelIndex index);

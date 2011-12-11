@@ -2,9 +2,13 @@
 #include "mediarendererdisplaywindow.h"
 #include "mediarenderermanager.h"
 
+#include <HUpnpAv/HItem>
+#include <HUpnpAv/HResource>
+#include <HUpnpAv/HProtocolInfo>
 #include <HUpnpAv/HRendererConnection>
-#include <HUpnpAv/HConnection>
-#include <HUpnpAv/HConnectionInfo>
+
+#include <QMessageBox>
+
 
 using namespace Herqq::Upnp;
 using namespace Herqq::Upnp::Av;
@@ -38,7 +42,9 @@ HRendererConnection* MediaRendererConnectionManager::doCreate(
 
     foreach(MediaRendererDisplayWindow* win, m_pOwner->m_displayWindows)
     {
-        if (win->connection() == 0)
+        if ((win->item()->resources().at(0).protocolInfo().contentFormat() == contentFormat)
+            && (!win->renderingControlConnection()))
+//        if (win->connection() == 0)
         //Now, the connection has not built yet. So no HConnecton Object exists.
         {
             curWin = win;
@@ -46,26 +52,26 @@ HRendererConnection* MediaRendererConnectionManager::doCreate(
         }
     }
 
-    if (!curWin)
-    {
-        return 0;
-    }
+    Q_ASSERT(curWin);
+
+//    QMessageBox::information(0, tr(""), tr("%1").
+//                             arg(QString::number(m_pOwner->m_displayWindows.size())));
 
     curWin->initializeRenderingControl(cf, m_pOwner->m_pNetworkMgr);
 
     if (!curWin->renderingControlConnection())
     {
-        curWin->deleteLater();
+        //curWin->close();
         return 0;
     }
 
-    bool ok = QObject::connect(
-            m_pOwner,
-            SIGNAL(destroyed()),
-            curWin,
-            SLOT(deleteLater()));
-    Q_ASSERT(ok);
-    Q_UNUSED(ok);
+//    bool ok = QObject::connect(
+//            m_pOwner,
+//            SIGNAL(destroyed()),
+//            curWin,
+//            SLOT(deleteLater()));
+//    Q_ASSERT(ok);
+//    Q_UNUSED(ok);
 
     return curWin->renderingControlConnection();
 }

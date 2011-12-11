@@ -134,6 +134,12 @@ void ControlPointWindow::mediaServerOffline(
 {
     //m_pControlPoint->removeMediaServer(deviceAdapter);
     m_pNavModel->mediaServerOffline(deviceAdapter);
+
+    if (deviceAdapter->device()->info().udn() == m_pDetailModel->deviceUdn())
+    {
+        m_pDetailModel->deviceRemoved(deviceAdapter->device()->info().udn());
+        updateDetailDisplay(m_pNavModel->serverContainerItem());
+    }
 }
 
 void ControlPointWindow::mediaRendererOnline(
@@ -197,7 +203,7 @@ void ControlPointWindow::updateDetailDisplay(ControlPointNavigatorItem* item)
 //        getCdsContainerDetail(item->child(i));
 //    }
     m_curChild = 0;
-    m_timer.start(500);
+    m_timer.start(200);
 }
 
 bool ControlPointWindow::getCdsContainerDetail(ControlPointNavigatorItem* navItem)
@@ -309,6 +315,7 @@ void ControlPointWindow::on_detaiDisplaylView_activated(QModelIndex index)
                         m_pControlPoint,
                         m_pRendererMgr->mediaRendererAdapter(),
                         static_cast<HItem*>(item->itemPointer()),
+                        m_pDetailModel->deviceUdn(),
                         this);
             }
             break;
@@ -350,4 +357,9 @@ void ControlPointWindow::on_actionProperties_triggered()
 {
     ControlPointPropertyDialog dlg(m_pLastSelectedItem, this);
     dlg.exec();
+}
+
+void ControlPointWindow::on_actionRefresh_triggered()
+{
+    updateDetailDisplay(m_pDetailModel->currentItem());
 }

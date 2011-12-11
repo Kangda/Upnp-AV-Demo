@@ -28,6 +28,7 @@ public:
     void newDisplayWindow(Herqq::Upnp::Av::HAvControlPoint*,
                           Herqq::Upnp::Av::HMediaRendererAdapter*,
                           Herqq::Upnp::Av::HItem*,
+                          Herqq::Upnp::HUdn,
                           QWidget *parent = 0);
 
 private:
@@ -42,7 +43,7 @@ private:
 
 private slots:
     void mediaRendererOnline(Herqq::Upnp::Av::HMediaRendererAdapter*);
-    void closeDisplayWindow(QObject*);
+    void closeDisplayWindow(MediaRendererDisplayWindow*);
 
 };
 

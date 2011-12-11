@@ -161,7 +161,6 @@ ControlPointContentDirectoryItem::ControlPointContentDirectoryItem(
 
 ControlPointContentDirectoryItem::~ControlPointContentDirectoryItem()
 {
-    delete m_pBrowser;
 }
 
 QVariant ControlPointContentDirectoryItem::data(int) const

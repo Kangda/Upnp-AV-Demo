@@ -5,6 +5,8 @@
 #include <HUpnpAv/HMediaRendererDeviceConfiguration>
 #include <HUpnpAv/HAvDeviceModelCreator>
 #include <HUpnpAv/HAvControlPoint>
+#include <HUpnpAv/HConnection>
+#include <HUpnpAv/HConnectionInfo>
 #include <HUpnpAv/HMediaRendererAdapter>
 #include <HUpnpAv/HAbstractMediaRendererDevice>
 #include <HUpnpAv/HAbstractConnectionManagerService>
@@ -48,7 +50,7 @@ MediaRendererManager::MediaRendererManager(Herqq::Upnp::Av::HAvControlPoint *cp)
     hostConfig.setDeviceModelCreator(creator);
     hostConfig.add(config);
 
-    m_pDeviceHost = new HDeviceHost(this);
+    m_pDeviceHost = new HDeviceHost();
     if (!m_pDeviceHost->init(hostConfig))
     {
         qWarning() << m_pDeviceHost->errorDescription();
@@ -74,6 +76,12 @@ MediaRendererManager::~MediaRendererManager()
     delete m_pConnectionMgr;
     delete m_pDeviceHost;
     delete m_pNetworkMgr;
+
+    foreach(MediaRendererDisplayWindow* win, m_displayWindows)
+    {
+        if (win)
+            delete win;
+    }
 }
 
 HMediaRendererAdapter* MediaRendererManager::mediaRendererAdapter() const
@@ -96,31 +104,51 @@ void MediaRendererManager::setDisplayWindow(MediaRendererDisplayWindow *win)
 void MediaRendererManager::newDisplayWindow(Herqq::Upnp::Av::HAvControlPoint *cp,
                                             Herqq::Upnp::Av::HMediaRendererAdapter *ad,
                                             Herqq::Upnp::Av::HItem *item,
+                                            Herqq::Upnp::HUdn udn,
                                             QWidget *parent)
 {
     MediaRendererDisplayWindow* itemDisplay =
-            new MediaRendererDisplayWindow(cp, ad, item, parent);
+            new MediaRendererDisplayWindow(cp, ad, item, udn,parent);
 
     m_displayWindows.insert(itemDisplay);
 
     bool ok = connect(
             itemDisplay,
-            SIGNAL(destroyed(QObject*)),
+            SIGNAL(close(MediaRendererDisplayWindow*)),
             this,
-            SLOT(closeDisplayWindow(QObject*)));
+            SLOT(closeDisplayWindow(MediaRendererDisplayWindow*)));
+    Q_ASSERT(ok);
+
+    ok = connect(
+            m_pControlPoint,
+            SIGNAL(mediaServerOffline(Herqq::Upnp::Av::HMediaServerAdapter*)),
+            itemDisplay,
+            SLOT(mediaServerOffline(Herqq::Upnp::Av::HMediaServerAdapter*)));
     Q_ASSERT(ok);
 
     itemDisplay->show();
 }
 
-void MediaRendererManager::closeDisplayWindow(QObject *obj)
+void MediaRendererManager::closeDisplayWindow(MediaRendererDisplayWindow* win)
 {
-    MediaRendererDisplayWindow* win =
-            qobject_cast<MediaRendererDisplayWindow*>(obj);
+//    MediaRendererDisplayWindow* win =
+//            dynamic_cast<MediaRendererDisplayWindow*>(obj);
 
-    m_displayWindows.remove(win);
+//    foreach(MediaRendererDisplayWindow* w, m_displayWindows)
+//    {
+//        if (w->connection() &&
+//            w->connection()->info().connectionId()
+//            == win->connection()->info().connectionId())
+//        {
+//            if (m_displayWindows.remove(w))
+//                QMessageBox::information(0, tr(""), tr("remove a window."));
+//            break;
+//        }
+//    }
+    if (!m_displayWindows.remove(win))
+        QMessageBox::warning(0, tr("closeDisplayWindow()"),
+                            tr("The windows closed matches none in the set. Advise RESTART."));
 
-    QMessageBox::information(0, tr(""), tr("remove a window."));
 }
 
 void MediaRendererManager::mediaRendererOnline(

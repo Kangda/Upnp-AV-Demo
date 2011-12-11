@@ -103,6 +103,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionRefresh"/>
+   <addaction name="separator"/>
    <addaction name="actionClose"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -119,6 +121,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionProperties"/>
+    <addaction name="actionRefresh"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
    </widget>
@@ -136,6 +139,18 @@
    </property>
    <property name="text">
     <string>&amp;Close</string>
+   </property>
+  </action>
+  <action name="actionRefresh">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/icon/refresh.svg</normaloff>:/icon/refresh.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="toolTip">
+    <string>Refresh detail view.</string>
    </property>
   </action>
  </widget>

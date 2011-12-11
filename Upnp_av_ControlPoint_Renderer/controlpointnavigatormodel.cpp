@@ -216,6 +216,11 @@ void ControlPointNavigatorModel::browserFailed(Herqq::Upnp::Av::HMediaBrowser *b
     Q_UNUSED(browser);
 }
 
+ControlPointNavigatorItem* ControlPointNavigatorModel::serverContainerItem() const
+{
+    return m_pServersItem;
+}
+
 void ControlPointNavigatorModel::mediaServerOffline(
         Herqq::Upnp::Av::HMediaServerAdapter *deviceAdapter)
 {
@@ -227,9 +232,9 @@ void ControlPointNavigatorModel::mediaServerOffline(
         if (cdsContentDirectoryItem->browser()->contentDirectory()->service()->parentDevice()
             == deviceAdapter->device())
         {
-            beginInsertRows(QModelIndex(), i, i);
+            beginRemoveRows(QModelIndex(), i, i);
             m_pServersItem->removeChild(i);
-            endInsertRows();
+            endRemoveRows();
             break;  /*One Device, One ContentDirectoryItem*/
         }
     }

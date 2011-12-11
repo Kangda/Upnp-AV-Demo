@@ -5,6 +5,7 @@
 
 #include <phonon/MediaObject>
 #include <phonon/VideoWidget>
+#include <phonon/AudioOutput>
 
 #include <QWidget>
 
@@ -46,6 +47,7 @@ protected:
 
     virtual qint32 doPlay(const QString& arg);
     virtual qint32 doStop();
+    virtual qint32 doPause();
 
     virtual qint32 doSeek(const Herqq::Upnp::Av::HSeekInfo& seekInfo);
     virtual qint32 doNext();
@@ -85,6 +87,7 @@ protected:
 
     virtual qint32 doPlay(const QString& arg);
     virtual qint32 doStop();
+    virtual qint32 doPause();
 
     virtual qint32 doSeek(const Herqq::Upnp::Av::HSeekInfo& seekInfo);
     virtual qint32 doNext();
@@ -138,6 +141,7 @@ protected:
 private:
     Phonon::MediaObject m_mediaObject;
     Phonon::MediaSource* m_pMediaSource;
+    Phonon::AudioOutput* m_pAudioOuput;
 
     void setup();
 
@@ -178,6 +182,7 @@ private:
     Phonon::MediaObject m_mediaObject;
     Phonon::MediaSource* m_pMediaSource;
     Phonon::VideoWidget* m_pVideoWidget;
+    Phonon::AudioOutput* m_pAudioOuput;
 
     void setup();
 

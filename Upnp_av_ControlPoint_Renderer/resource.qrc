@@ -15,5 +15,6 @@
         <file>icon/pause.svg</file>
         <file>icon/start.svg</file>
         <file>icon/stop.svg</file>
+        <file>icon/refresh.svg</file>
     </qresource>
 </RCC>

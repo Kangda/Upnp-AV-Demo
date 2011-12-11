@@ -61,6 +61,7 @@ public:
     void init(ControlPointNavigatorItem*);
 
     ControlPointNavigatorItem* currentItem() const;
+    Herqq::Upnp::HUdn deviceUdn() const;
     QString path(ControlPointNavigatorItem*);
 
 signals:

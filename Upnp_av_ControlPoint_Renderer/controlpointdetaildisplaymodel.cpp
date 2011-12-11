@@ -242,6 +242,11 @@ ControlPointNavigatorItem* ControlPointDetailDisplayModel::currentItem() const
     return m_pCurItem;
 }
 
+HUdn ControlPointDetailDisplayModel::deviceUdn() const
+{
+    return m_rootDeviceUdn;
+}
+
 QString ControlPointDetailDisplayModel::path(ControlPointNavigatorItem* item)
 {
 

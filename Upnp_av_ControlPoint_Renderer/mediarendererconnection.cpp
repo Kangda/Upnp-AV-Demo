@@ -4,7 +4,6 @@
 #include <HUpnpAv/HMediaInfo>
 #include <HUpnpAv/HTransportState>
 
-#include <phonon/AudioOutput>
 #include <phonon/MediaSource>
 
 #include <QUrl>
@@ -133,6 +132,14 @@ qint32 MediaRendererConnectionForText::doStop()
     return UpnpSuccess;
 }
 
+qint32 MediaRendererConnectionForText::doPause()
+{
+    m_isPlaying = false;
+
+    setup();
+    return UpnpSuccess;
+}
+
 qint32 MediaRendererConnectionForText::doSeek(const HSeekInfo& seekInfo)
 {
     Q_UNUSED(seekInfo);
@@ -216,7 +223,7 @@ void MediaRendererConnectionForImage::setup()
     }
     else //if stopped, black instead
     {
-        QMessageBox::information(0, tr(""), tr("not Loaded Pixmap."));
+        //QMessageBox::information(0, tr(""), tr("not Loaded Pixmap."));
         m_pImage->fill(QColor(Qt::black));
         m_pImageContainer->setPixmap(m_pImage->scaled(m_pImageContainer->size(),
                                                       Qt::KeepAspectRatio));
@@ -265,6 +272,15 @@ qint32 MediaRendererConnectionForImage::doStop()
     return UpnpSuccess;
 }
 
+qint32 MediaRendererConnectionForImage::doPause()
+{
+    m_isPlaying = false;
+
+    setup();
+
+    return UpnpSuccess;
+}
+
 qint32 MediaRendererConnectionForImage::doSeek(const HSeekInfo& seekInfo)
 {
     Q_UNUSED(seekInfo);
@@ -307,7 +323,8 @@ qint32 MediaRendererConnectionForImage::doSelectPreset(const QString &presetName
 MediaRendererConnectionForAudio::MediaRendererConnectionForAudio(QWidget *parent) :
         MediaRendererConnection(parent),
         m_mediaObject(parent),
-        m_pMediaSource(0)
+        m_pMediaSource(0),
+        m_pAudioOuput(new AudioOutput(Phonon::MusicCategory, parent))
 {
     bool ok = connect(
             &m_mediaObject,
@@ -317,12 +334,15 @@ MediaRendererConnectionForAudio::MediaRendererConnectionForAudio(QWidget *parent
     Q_ASSERT(ok);
     Q_UNUSED(ok);
 
-    AudioOutput* audioOuput = new AudioOutput(Phonon::MusicCategory, parent);
-    createPath(&m_mediaObject, audioOuput);
+    createPath(&m_mediaObject, m_pAudioOuput);
 }
 
 MediaRendererConnectionForAudio::~MediaRendererConnectionForAudio()
 {
+    //m_mediaObject.stop();
+    m_mediaObject.clear();
+    if (m_pAudioOuput)
+        m_pAudioOuput->deleteLater();
 }
 
 void MediaRendererConnectionForAudio::setup()
@@ -434,7 +454,8 @@ MediaRendererConnectionForVideo::MediaRendererConnectionForVideo(QWidget *parent
         MediaRendererConnection(parent),
         m_mediaObject(parent),
         m_pMediaSource(0),
-        m_pVideoWidget(0)
+        m_pVideoWidget(0),
+        m_pAudioOuput(new AudioOutput(Phonon::VideoCategory, parent))
 {
     bool ok = connect(
             &m_mediaObject,
@@ -446,12 +467,15 @@ MediaRendererConnectionForVideo::MediaRendererConnectionForVideo(QWidget *parent
 
     setup();
 
-    AudioOutput* audioOuput = new AudioOutput(Phonon::MusicCategory, parent);
-    createPath(&m_mediaObject, audioOuput);
+    createPath(&m_mediaObject, m_pAudioOuput);
 }
 
 MediaRendererConnectionForVideo::~MediaRendererConnectionForVideo()
 {
+    //m_mediaObject.stop();
+    m_mediaObject.clear();
+    if (m_pAudioOuput)
+        m_pAudioOuput->deleteLater();
 }
 
 void MediaRendererConnectionForVideo::setup()
